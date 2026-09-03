@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
 
-Sitemap: https://reipharma.al/sitemap.xml
+Sitemap: https://reipharma.al/sitemap-index.xml

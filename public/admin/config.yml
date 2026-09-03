@@ -1,0 +1,173 @@
+backend:
+  name: github
+  repo: monarkautomations/rei-pharma
+  branch: main
+  # Netlify e shërben autentikimin GitHub vetë — nuk kërkohet Netlify Identity
+  # dhe as ndonjë aplikacion OAuth i ndarë. Mjafton që repo-ja të jetë e
+  # lidhur me këtë sajt në Netlify (është).
+  base_url: https://api.netlify.com
+  auth_endpoint: auth
+
+# Vendi ku shkojnë fotot e ngarkuara — kur nuk përcaktohet ndryshe te fusha.
+# npm run fotot i zvogëlon vetë ato që bien këtu, në build-in tjetër.
+media_folder: "public/foto"
+public_folder: "/foto"
+
+# Shqipja shkruhet me ë dhe ç; adresat (slug) duhen pa to.
+# "Kujdesi ndaj flokëve" -> "kujdesi-ndaj-flokeve", jo "kujdesi-ndaj-flokëve".
+slug:
+  encoding: "unicode"
+  clean_accents: true
+  sanitize_replacements:
+    "ë": "e"
+    "Ë": "E"
+    "ç": "c"
+    "Ç": "C"
+
+collections:
+  - name: "categories"
+    label: "Kategoritë"
+    label_singular: "Kategori"
+    folder: "src/content/categories"
+    create: true
+    delete: true
+    slug: "{{fields.name_sq}}"
+    format: "frontmatter"
+    extension: "md"
+    summary: "{{name_sq}}"
+    fields:
+      - { label: "Emri (shqip)", name: "name_sq", widget: "string", required: true }
+      - { label: "Emri (anglisht)", name: "name_en", widget: "string", required: true }
+      - { label: "Përshkrim i shkurtër (shqip)", name: "blurb_sq", widget: "text", required: true }
+      - { label: "Përshkrim i shkurtër (anglisht)", name: "blurb_en", widget: "text", required: true }
+      - label: "Foto (opsionale)"
+        name: "image"
+        widget: "image"
+        required: false
+        media_folder: "public/foto"
+        public_folder: "/foto"
+      - label: "Radha e shfaqjes"
+        name: "order"
+        widget: "number"
+        value_type: "int"
+        default: 99
+        required: false
+        hint: "Numër më i vogël del i pari. Lëre 99 nëse s'ka rëndësi radha."
+
+  - name: "products"
+    label: "Produktet"
+    label_singular: "Produkt"
+    folder: "src/content/products"
+    create: true
+    delete: true
+    slug: "{{fields.name_sq}}"
+    format: "frontmatter"
+    extension: "md"
+    summary: "{{name_sq}} — {{price}} L"
+    fields:
+      - { label: "Emri (shqip)", name: "name_sq", widget: "string", required: true }
+      - { label: "Emri (anglisht)", name: "name_en", widget: "string", required: true }
+      - label: "Çmimi (lekë, vetëm numër)"
+        name: "price"
+        widget: "number"
+        value_type: "int"
+        min: 1
+        required: true
+        hint: "Pa presje, pa simbolin L. P.sh. 2400"
+      - label: "Çmimi i vjetër (opsionale)"
+        name: "oldPrice"
+        widget: "number"
+        value_type: "int"
+        min: 1
+        required: false
+        hint: "Vendose vetëm nëse produkti është në ofertë. Duhet më i madh se çmimi aktual."
+      - label: "Kategoria"
+        name: "category"
+        widget: "relation"
+        collection: "categories"
+        search_fields: ["name_sq"]
+        display_fields: ["name_sq"]
+        value_field: "{{slug}}"
+        required: true
+      - { label: "Marka (opsionale)", name: "brand", widget: "string", required: false }
+      - label: "Foto"
+        name: "image"
+        widget: "image"
+        required: false
+        default: "/produkt-placeholder.svg"
+        media_folder: "public/foto"
+        public_folder: "/foto"
+        hint: "Pa foto, del vizatimi gri i përkohshëm."
+      - { label: "Përshkrimi (shqip)", name: "desc_sq", widget: "text", required: true }
+      - { label: "Përshkrimi (anglisht)", name: "desc_en", widget: "text", required: true }
+      - { label: "Në gjendje?", name: "inStock", widget: "boolean", default: true }
+      - label: "Të zgjedhura"
+        name: "featured"
+        widget: "boolean"
+        default: false
+        hint: "Shfaqet te seksioni 'Të zgjedhura' në kryefaqe."
+      - label: "Radha e shfaqjes"
+        name: "order"
+        widget: "number"
+        value_type: "int"
+        default: 99
+        required: false
+        hint: "Numër më i vogël del i pari brenda kategorisë."
+
+  - name: "posts"
+    label: "Këshilla (blogu)"
+    label_singular: "Shkrim"
+    folder: "src/content/posts"
+    create: true
+    delete: true
+    slug: "{{fields.title}}"
+    format: "frontmatter"
+    extension: "md"
+    summary: "{{title}} ({{lang}})"
+    fields:
+      - { label: "Titulli", name: "title", widget: "string", required: true }
+      - label: "Përmbledhje e shkurtër"
+        name: "excerpt"
+        widget: "text"
+        required: true
+        hint: "Shfaqet te lista e shkrimeve, poshtë titullit."
+      - label: "Gjuha"
+        name: "lang"
+        widget: "select"
+        options:
+          - { label: "Shqip", value: "sq" }
+          - { label: "English", value: "en" }
+        default: "sq"
+        required: true
+      - label: "Përkthim i cilit shkrim shqip? (vetëm për postet anglisht)"
+        name: "translationOf"
+        widget: "string"
+        required: false
+        hint: "Shkruaj adresën e postit shqip, p.sh. 'vitamina-d-ne-dimer'. Lëre bosh nëse shkrimi është në shqip."
+      - label: "Foto kryesore"
+        name: "cover"
+        widget: "image"
+        required: false
+        media_folder: "public/blog"
+        public_folder: "/blog"
+      - label: "Përshkrimi i fotos"
+        name: "coverAlt"
+        widget: "string"
+        required: false
+        hint: "Për lexues ekrani — çfarë tregon fotoja, me pak fjalë."
+      - { label: "Data e publikimit", name: "date", widget: "datetime", required: true }
+      - label: "Përditësuar më (opsionale)"
+        name: "updated"
+        widget: "datetime"
+        required: false
+      - { label: "Autori", name: "author", widget: "string", default: "Farmaci Rei" }
+      - label: "Etiketa"
+        name: "tag"
+        widget: "string"
+        required: false
+        hint: "P.sh. 'Kujdesi ndaj diellit'. Shfaqet si etiketë mbi titullin."
+      - label: "Draft — mos e publiko ende"
+        name: "draft"
+        widget: "boolean"
+        default: false
+      - { label: "Përmbajtja e shkrimit", name: "body", widget: "markdown", required: true }

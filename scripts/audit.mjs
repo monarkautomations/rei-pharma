@@ -23,7 +23,9 @@ if (!existsSync('dist')) {
 }
 
 const all = walk('dist');
-const pages = all.filter((f) => f.endsWith('.html'));
+// /admin është paneli i CMS-së, jo faqe e site-it — s'ka title/description/
+// JSON-LD me qëllim, dhe nuk duhet indeksuar nga Google.
+const pages = all.filter((f) => f.endsWith('.html') && !f.includes(`${sep}admin${sep}`));
 
 let problems = 0;
 

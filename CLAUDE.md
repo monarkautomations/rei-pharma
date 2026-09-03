@@ -66,6 +66,7 @@ përdor `gold-600` (`#8A6A34`, 5.01:1). Mbi sfond jeshil përdor `gold-300`.
 - `src/components/` — Header, Footer, LangSwitch, Search, ProductCard, PostCard,
   CartWidget, AddToCart, TrustStrip, StatsCounter, AuroraBackground, HeroFlourish.
 - `scripts/` — build-logo, build-blog-placeholders, optimize-images, audit, test-search.
+- `public/admin/` — Sveltia CMS (`index.html` + `config.yml`). Shih "Gjendja aktuale".
 
 ### Fotot
 
@@ -127,6 +128,26 @@ Të mbaruara, në të dyja gjuhët: kryefaqja, produktet, kategoritë, faqja e
 produktit, blogu, kërkimi, kontakti, rreth nesh, privatësia, kushtet, 404,
 shporta me checkout WhatsApp. 43 faqe gjithsej.
 
+**Publikuar.** Repo në GitHub (`monarkautomations/rei-pharma`), lidhur me
+Netlify — çdo `git push` në `main` del online vetvetiu brenda ~1-2 minutash.
+Sitemap real gjenerohet në build (`@astrojs/sitemap`, shih `astro.config.mjs`);
+`robots.txt` nuk gënjen më dhe bllokon `/admin/`.
+
+**CMS gati.** Sveltia CMS te `/admin` (file-t: `public/admin/index.html` dhe
+`public/admin/config.yml`). Backend GitHub përmes proxy-t OAuth të Netlify-t
+(`base_url: https://api.netlify.com`) — s'kërkon Netlify Identity, s'kërkon
+aplikacion OAuth të veçantë. Klienti hyn me llogari GitHub; për të shkruar,
+duhet të jetë bashkëpunëtor (collaborator) i ftuar te repo-ja.
+
+Tri koleksionet përputhen fjalë për fjalë me `content.config.ts` — çdo ndryshim
+skeme atje kërkon të njëjtin ndryshim te `config.yml`, përndryshe CMS-ja do të
+shkruajë fusha që Zod i refuzon. Sllugu transliterohet vetë (ë→e, ç→c) sipas
+kërkesës së PUNA.md — provuar kundrejt file-ave ekzistues.
+
+Fotot e ngarkuara nga CMS-ja shkojnë te `public/foto` (produkte, kategori) ose
+`public/blog` (kapakët e shkrimeve) — të dyja tashmë të mbuluara nga
+`npm run fotot`.
+
 ### Logoja
 
 Origjinali është `public/logo-full.jpg` — katror, me sfond, i padobishëm në një
@@ -139,12 +160,13 @@ komandën — asnjë rresht kodi nuk ndryshon.
 
 `stats` te `site.ts` janë konfirmuar nga klienti. Nuk duhen rikonfirmuar.
 
-Mungojnë:
+Mungon:
 - Produktet reale (të 7-tat janë placeholder, marka shkruan "PLACEHOLDER") —
   klienti do t'i shtojë vetë nga CMS-ja kur ta ketë gati. Mos i shpik ti.
 - Fotot e produkteve (sot vizatimi gri). Fotot e blogut tashmë janë vendosur.
-- CMS (Sveltia, git-based) që klienti të shtojë produkte, kategori dhe shkrime
-- Publikimi në Netlify, me sitemap — `robots.txt` premton një që s'ekziston ende
+- Domeni `reipharma.al` — sot site-i rri te adresa falas e Netlify-t.
+  `astro.config.mjs` dhe `site.ts` presin `reipharma.al`; kur domeni të lidhet
+  vërtet, kontrollo që s'ka mbetur gjë e koduar me adresën e vjetër Netlify.
 
 ## Konfirmuar me klientin
 
