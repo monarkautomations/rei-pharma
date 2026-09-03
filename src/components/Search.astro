@@ -1,0 +1,264 @@
+---
+import { path, searchIndexUrl, t, type Lang } from '../lib/i18n';
+
+/**
+ * Kërkimi i produkteve. Pa server: lexon indeksin JSON të gjeneruar në build.
+ *
+ * Përdoret dy herë për faqe (header desktop dhe rreshti në telefon), ndaj çdo
+ * instancë merr id-në e vet dhe skripti punon vetëm brenda rrënjës së vet.
+ */
+interface Props {
+  id: string;
+  lang: Lang;
+  placeholder?: string;
+  /** Fokusohet vetë kur hapet faqja e kërkimit. */
+  autofocus?: boolean;
+}
+
+const { id, lang, placeholder, autofocus = false } = Astro.props;
+
+const listId = `${id}-list`;
+const statusId = `${id}-status`;
+---
+
+<div
+  class="relative"
+  data-search-root
+  data-search-id={id}
+  data-search-lang={lang}
+  data-search-index={searchIndexUrl(lang)}
+  data-search-product-base={path(lang, 'product', '')}
+>
+  <form action={path(lang, 'search')} method="get" role="search" class="relative">
+    <label class="sr-only" for={id}>{t(lang, 'searchLabel')}</label>
+
+    <svg
+      class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-slate"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m20 20-3.5-3.5"></path>
+    </svg>
+
+    <input
+      id={id}
+      name="q"
+      type="search"
+      autocomplete="off"
+      autofocus={autofocus}
+      placeholder={placeholder ?? t(lang, 'searchPlaceholder')}
+      role="combobox"
+      aria-expanded="false"
+      aria-controls={listId}
+      aria-autocomplete="list"
+      aria-describedby={statusId}
+      class="h-11 w-full rounded-full border border-mist bg-bone/60 pr-11 pl-11 text-[15px] text-forest-900 transition-colors placeholder:text-slate focus:border-gold-500 focus:bg-white focus:outline-none"
+      data-search-input
+    />
+
+    <button
+      type="button"
+      class="absolute top-1/2 right-2 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-slate hover:bg-bone hover:text-forest-900"
+      aria-label={t(lang, 'searchClear')}
+      data-search-clear
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+  </form>
+
+  <!-- Njoftimi për lexuesit e ekranit: sa rezultate u gjetën. -->
+  <p id={statusId} class="sr-only" role="status" aria-live="polite" data-search-status></p>
+
+  <ul
+    id={listId}
+    role="listbox"
+    aria-label={t(lang, 'searchResults')}
+    hidden
+    class="absolute top-[calc(100%+8px)] right-0 left-0 z-50 max-h-[70vh] overflow-y-auto rounded-[14px] border border-mist bg-white p-1.5 shadow-[0_18px_50px_-12px_rgba(18,43,37,0.28)]"
+    data-search-list
+  >
+  </ul>
+</div>
+
+<script>
+  import { searchProducts, type SearchItem } from '../lib/search';
+
+  // Indeksi shkarkohet një herë për faqe dhe ndahet mes të dyja kërkimeve.
+  const indexCache = new Map<string, Promise<SearchItem[]>>();
+
+  function loadIndex(url: string): Promise<SearchItem[]> {
+    if (!indexCache.has(url)) {
+      indexCache.set(
+        url,
+        fetch(url)
+          .then((r) => (r.ok ? r.json() : []))
+          .catch(() => []),
+      );
+    }
+    return indexCache.get(url)!;
+  }
+
+  function formatPrice(lek: number) {
+    const digits = String(Math.round(lek));
+    const grouped =
+      digits.length > 4
+        ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, String.fromCharCode(0xa0))
+        : digits;
+    return `${grouped} L`;
+  }
+
+  function escapeHtml(text: string) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function setupSearch(root: HTMLElement) {
+    const input = root.querySelector<HTMLInputElement>('[data-search-input]')!;
+    const list = root.querySelector<HTMLElement>('[data-search-list]')!;
+    const status = root.querySelector<HTMLElement>('[data-search-status]')!;
+    const clear = root.querySelector<HTMLButtonElement>('[data-search-clear]')!;
+
+    const id = root.dataset.searchId!;
+    const lang = (root.dataset.searchLang ?? 'sq') as 'sq' | 'en';
+    const indexUrl = root.dataset.searchIndex!;
+    const productBase = root.dataset.searchProductBase!;
+    const noneText = lang === 'en' ? 'No products for' : 'Asnjë produkt për';
+    const countText = lang === 'en' ? 'results' : 'rezultate';
+
+    let results: SearchItem[] = [];
+    let active = -1;
+
+    function close() {
+      list.hidden = true;
+      list.innerHTML = '';
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      results = [];
+      active = -1;
+    }
+
+    function highlight() {
+      const options = list.querySelectorAll<HTMLElement>('[role="option"]');
+      options.forEach((option, i) => {
+        const on = i === active;
+        option.setAttribute('aria-selected', String(on));
+        option.classList.toggle('bg-bone', on);
+        if (on) {
+          input.setAttribute('aria-activedescendant', option.id);
+          option.scrollIntoView({ block: 'nearest' });
+        }
+      });
+      if (active === -1) input.removeAttribute('aria-activedescendant');
+    }
+
+    function render(query: string) {
+      if (results.length === 0) {
+        list.innerHTML = `<li class="px-4 py-6 text-center text-[14px] text-slate">
+            ${noneText} “${escapeHtml(query)}”.
+          </li>`;
+        list.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+        status.textContent = `0 ${countText}.`;
+        return;
+      }
+
+      list.innerHTML = results
+        .map((item, i) => {
+          const name = lang === 'en' ? item.en : item.sq;
+          const category = lang === 'en' ? item.caten : item.cat;
+          return `
+          <li id="${id}-opt-${i}" role="option" aria-selected="false" class="rounded-[10px]">
+            <a href="${productBase}${item.slug}"
+               class="flex min-h-[56px] items-center gap-3 rounded-[10px] px-2.5 py-2">
+              <img src="${item.image}" alt="" width="44" height="44" loading="lazy"
+                   class="h-11 w-11 shrink-0 rounded-md bg-bone object-contain p-1" />
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-[14px] leading-snug text-forest-900">${escapeHtml(name)}</span>
+                <span class="block truncate text-[12px] text-slate">${escapeHtml(category)}</span>
+              </span>
+              <span class="shrink-0 text-[14px] font-medium tabular-nums">${formatPrice(item.price)}</span>
+            </a>
+          </li>`;
+        })
+        .join('');
+
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      status.textContent = `${results.length} ${countText}.`;
+      highlight();
+    }
+
+    async function run() {
+      const query = input.value.trim();
+      clear.style.display = query ? 'grid' : 'none';
+
+      if (query.length < 2) {
+        close();
+        return;
+      }
+
+      const items = await loadIndex(indexUrl);
+      // Përdoruesi mund të ketë shkruar më tej ndërsa indeksi shkarkohej.
+      if (input.value.trim() !== query) return;
+
+      results = searchProducts(items, query, lang);
+      active = -1;
+      render(query);
+    }
+
+    let timer: number | undefined;
+    input.addEventListener('input', () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(run, 120);
+    });
+
+    input.addEventListener('focus', () => {
+      if (input.value.trim().length >= 2) run();
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        close();
+        return;
+      }
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (results.length === 0) return;
+        event.preventDefault();
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        active = (active + step + results.length) % results.length;
+        highlight();
+        return;
+      }
+
+      if (event.key === 'Enter' && active >= 0) {
+        event.preventDefault();
+        window.location.href = `${productBase}${results[active].slug}`;
+      }
+      // Enter pa zgjedhje e dërgon formën te faqja e kërkimit — sjellje e zakonshme.
+    });
+
+    clear.addEventListener('click', () => {
+      input.value = '';
+      clear.style.display = 'none';
+      close();
+      input.focus();
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!root.contains(event.target as Node)) close();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-search-root]').forEach(setupSearch);
+</script>

@@ -1,0 +1,59 @@
+---
+/**
+ * Kapaku i një shkrimi, në kuti me përmasa fikse — pa prerë asgjë nga fotoja.
+ *
+ * Problemi: kartat janë horizontale (16:10), por fotot vijnë të çdo forme.
+ * Me `object-cover`, një foto vertikale humbet deri në 65% të vetes; te
+ * fotot e produkteve me shkrim mbi to, teksti pritej përgjysmë.
+ *
+ * Zgjidhja: e njëjta foto vihet dy herë. Poshtë, e zmadhuar dhe e turbullt,
+ * mbush kutinë me ngjyrat e veta. Sipër, e plotë me `object-contain`.
+ * Kështu asgjë nuk humbet dhe kutia mbetet e njëjtë për çdo kartë — pa
+ * varësi nga çfarë ngarkon klienti nga CMS-ja.
+ *
+ * Kur fotoja është horizontale, ajo e mbush kutinë vetë dhe shtresa e
+ * turbullt nuk duket fare.
+ */
+interface Props {
+  src: string;
+  alt?: string;
+  /** Klasat e kutisë — zakonisht raporti, p.sh. `aspect-[16/10]`. */
+  class?: string;
+  eager?: boolean;
+  width?: number;
+  height?: number;
+}
+
+const {
+  src,
+  alt = '',
+  class: className = 'aspect-[16/10]',
+  eager = false,
+  width = 1200,
+  height = 750,
+} = Astro.props;
+
+const loading = eager ? 'eager' : 'lazy';
+---
+
+<div class:list={['relative overflow-hidden bg-forest-50', className]}>
+  <img
+    src={src}
+    alt=""
+    aria-hidden="true"
+    loading={loading}
+    decoding="async"
+    class="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+  />
+
+  <img
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    decoding="async"
+    fetchpriority={eager ? 'high' : undefined}
+    class="relative h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+  />
+</div>

@@ -1,0 +1,93 @@
+---
+import { stats } from '../config/site';
+
+/**
+ * Numrat që rriten kur seksioni hyn në ekran.
+ *
+ * Vlera përfundimtare shkruhet në HTML që crawler-at dhe lexuesit e ekranit ta
+ * shohin edhe pa JavaScript. Skripti e nis nga zero vetëm nëse animimi lejohet.
+ */
+---
+
+<section class="relative overflow-hidden bg-forest-900 text-bone">
+  <!-- Shkëlqim i lehtë ari në sfond, që të mos jetë bllok i sheshtë. -->
+  <div
+    class="pointer-events-none absolute inset-0 opacity-[0.14]"
+    style="background: radial-gradient(60% 120% at 15% 0%, var(--color-gold-300), transparent 60%), radial-gradient(50% 110% at 90% 100%, var(--color-forest-500), transparent 65%);"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="relative mx-auto max-w-[1200px] px-4 py-14 sm:py-20">
+    <div class="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
+      {
+        stats.map((stat) => (
+          <div data-reveal>
+            <p
+              class="font-display text-[42px] leading-none text-gold-300 sm:text-[56px]"
+              data-count={stat.value}
+              data-suffix={stat.suffix}
+            >
+              {stat.value}{stat.suffix}
+            </p>
+            <div class="rule-gold mt-4 h-px w-12"></div>
+            <p class="mt-3 text-[14px] leading-snug text-bone/75 sm:text-[15px]">
+              {stat.label}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  const NBSP = String.fromCharCode(0xa0);
+
+  function format(value: number) {
+    const digits = String(value);
+    return digits.length > 4
+      ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, NBSP)
+      : digits;
+  }
+
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let pending = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-count]'),
+  );
+
+  function run(el: HTMLElement) {
+    const target = Number(el.dataset.count ?? 0);
+    const suffix = el.dataset.suffix ?? '';
+    const duration = 1400;
+    const start = performance.now();
+
+    function step(now: number) {
+      const t = Math.min((now - start) / duration, 1);
+      // Ngadalësohet drejt fundit — ndalimi i beftë duket i lirë.
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = format(Math.round(target * eased)) + suffix;
+      if (t < 1) requestAnimationFrame(step);
+    }
+
+    el.textContent = '0' + suffix;
+    requestAnimationFrame(step);
+  }
+
+  // `rootMargin` i zgjeruar lart për të njëjtën arsye si te Base.astro: numrat
+  // nuk duhet të mbeten në zero nëse seksioni kapërcehet me kërcim.
+  if (pending.length > 0 && !still && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.unobserve(entry.target);
+          run(entry.target as HTMLElement);
+        });
+      },
+      { rootMargin: '9999px 0px -15% 0px' },
+    );
+
+    pending.forEach((el) => observer.observe(el));
+  }
+</script>

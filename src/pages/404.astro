@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import { path, t } from '../lib/i18n';
+
+// 404-a nuk e di në ç'gjuhë ishte vizitori. Mbetet shqip, por ofron të dyja
+// rrugët — Netlify shërben të njëjtin file për çdo adresë që s'ekziston.
+const lang = 'sq' as const;
+// 404-a nuk indeksohet, ndaj nuk merr hreflang.
+const alternates = null;
+---
+
+<Base
+  title="Faqja nuk u gjet — Rei Pharma"
+  description="Kjo faqe nuk ekziston. Kthehu te produktet ose te kryefaqja."
+  lang={lang}
+  alternates={alternates}
+>
+  <section class="mx-auto max-w-[640px] px-4 py-24 text-center">
+    <h1 class="text-[30px] sm:text-[38px]">{t(lang, 'notFoundTitle')}</h1>
+    <p class="mt-2 text-[17px] text-slate">This page does not exist.</p>
+
+    <p class="mt-5 text-[17px] text-graphite">{t(lang, 'notFoundText')}</p>
+
+    <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+      <a
+        href={path('sq', 'products')}
+        class="inline-flex min-h-[52px] items-center justify-center rounded-full bg-forest-900 px-7 text-[16px] font-medium text-white hover:bg-forest-700"
+      >
+        {t('sq', 'seeProducts')}
+      </a>
+      <a
+        href={path('en', 'products')}
+        class="inline-flex min-h-[52px] items-center justify-center rounded-full border border-forest-900/20 px-7 text-[16px] font-medium hover:bg-bone"
+      >
+        {t('en', 'seeProducts')}
+      </a>
+    </div>
+
+    <a
+      href={path('sq', 'home')}
+      class="mt-6 inline-flex min-h-[44px] items-center text-[15px] text-gold-600 underline underline-offset-2"
+    >
+      {t('sq', 'home')}
+    </a>
+  </section>
+</Base>

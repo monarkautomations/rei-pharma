@@ -1,0 +1,189 @@
+---
+import Base from '../../layouts/Base.astro';
+import Search from '../Search.astro';
+import { getCategoriesWithProducts } from '../../lib/catalog';
+import { path, searchIndexUrl, t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+}
+
+const { lang, alternates } = Astro.props;
+
+const categories = await getCategoriesWithProducts(lang);
+
+const meta = {
+  sq: {
+    title: 'Kërko produkte — Rei Pharma',
+    description:
+      'Kërko mes produkteve të Farmaci Rei: kremra dielli, vitamina, suplemente dhe kujdes për flokët.',
+  },
+  en: {
+    title: 'Search products — Rei Pharma',
+    description:
+      'Search the Farmaci Rei range: sunscreens, vitamins, supplements and hair care.',
+  },
+}[lang];
+---
+
+<Base
+  title={meta.title}
+  description={meta.description}
+  lang={lang}
+  alternates={alternates}
+>
+  <section
+    class="mx-auto max-w-[900px] px-4 py-10 sm:py-14"
+    data-search-page
+    data-index={searchIndexUrl(lang)}
+    data-lang={lang}
+    data-product-base={path(lang, 'product', '')}
+    data-products-href={path(lang, 'products')}
+  >
+    <h1 class="text-[30px] sm:text-[40px]">{t(lang, 'searchTitle')}</h1>
+
+    <div class="mt-6">
+      <Search id="search-page" lang={lang} autofocus />
+    </div>
+
+    <!-- Rezultatet e plota. Mbushen nga skripti sipas ?q= në adresë. -->
+    <div class="mt-10" data-results aria-live="polite"></div>
+
+    <noscript>
+      <p class="mt-10 rounded-[14px] border border-mist p-6 text-[15px] text-graphite">
+        {t(lang, 'searchNeedsJs')}
+        <a
+          href={path(lang, 'products')}
+          class="text-gold-600 underline underline-offset-2"
+        >
+          {t(lang, 'searchSeeAll')}
+        </a>.
+      </p>
+    </noscript>
+
+    <div class="mt-12 border-t border-mist pt-8">
+      <h2 class="eyebrow">{t(lang, 'searchBrowseCategory')}</h2>
+      <nav class="mt-4 flex flex-wrap gap-2">
+        {
+          categories.map((c) => (
+            <a
+              href={path(lang, 'category', c.slug)}
+              class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500"
+            >
+              {c.name}
+              <span class="ml-2 text-[13px] text-slate">{c.count}</span>
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { searchProducts, type SearchItem } from '../../lib/search';
+
+  const page = document.querySelector<HTMLElement>('[data-search-page]');
+  const box = page?.querySelector<HTMLElement>('[data-results]');
+
+  if (page && box) {
+    const indexUrl = page.dataset.index!;
+    const lang = (page.dataset.lang ?? 'sq') as 'sq' | 'en';
+    const productBase = page.dataset.productBase!;
+    const productsHref = page.dataset.productsHref!;
+
+    const words =
+      lang === 'en'
+        ? {
+            typeHere: 'Type what you are looking for in the field above.',
+            noneFor: 'No products for',
+            tryShorter: 'Try a shorter word, or',
+            seeAll: 'see all products',
+            one: 'product for',
+            many: 'products for',
+            failed: 'Search failed to load. Refresh the page.',
+            outOfStock: 'Out of stock',
+          }
+        : {
+            typeHere: 'Shkruaj çfarë kërkon në fushën lart.',
+            noneFor: 'Asnjë produkt për',
+            tryShorter: 'Provo një fjalë më të shkurtër, ose',
+            seeAll: 'shiko të gjitha produktet',
+            one: 'produkt për',
+            many: 'produkte për',
+            failed: 'Kërkimi nuk u ngarkua. Rifresko faqen.',
+            outOfStock: 'Jashtë stoku',
+          };
+
+    const query = new URLSearchParams(location.search).get('q')?.trim() ?? '';
+    const input = document.querySelector<HTMLInputElement>('#search-page');
+    if (input && query) input.value = query;
+
+    function escapeHtml(text: string) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatPrice(lek: number) {
+      const digits = String(Math.round(lek));
+      const grouped =
+        digits.length > 4
+          ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, String.fromCharCode(0xa0))
+          : digits;
+      return `${grouped} L`;
+    }
+
+    function card(item: SearchItem) {
+      const name = lang === 'en' ? item.en : item.sq;
+      const category = lang === 'en' ? item.caten : item.cat;
+      return `
+        <article class="group relative flex flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4">
+          <div class="overflow-hidden rounded-md bg-bone">
+            <img src="${item.image}" alt="${escapeHtml(name)}" width="600" height="800" loading="lazy"
+                 class="aspect-[3/4] w-full object-contain p-6" />
+          </div>
+          <h3 class="mt-3 font-sans text-[15px] leading-snug">
+            <a href="${productBase}${item.slug}" class="after:absolute after:inset-0 group-hover:text-gold-600">
+              ${escapeHtml(name)}
+            </a>
+          </h3>
+          <p class="mt-1 text-[13px] text-slate">${escapeHtml(category)}</p>
+          <p class="mt-2 text-[18px] font-medium tabular-nums">${formatPrice(item.price)}</p>
+          ${item.stock ? '' : `<p class="mt-1 text-[13px] text-slate">${words.outOfStock}</p>`}
+        </article>`;
+    }
+
+    if (!query) {
+      box.innerHTML = `<p class="text-[16px] text-graphite">${words.typeHere}</p>`;
+    } else {
+      fetch(indexUrl)
+        .then((r) => (r.ok ? r.json() : []))
+        .then((items: SearchItem[]) => {
+          const found = searchProducts(items, query, lang, 60);
+
+          if (found.length === 0) {
+            box.innerHTML = `
+              <h2 class="text-[22px]">${words.noneFor} “${escapeHtml(query)}”</h2>
+              <p class="mt-2 text-[16px] text-graphite">
+                ${words.tryShorter}
+                <a href="${productsHref}" class="text-gold-600 underline underline-offset-2">${words.seeAll}</a>.
+              </p>`;
+            return;
+          }
+
+          box.innerHTML = `
+            <h2 class="text-[22px]">${found.length} ${
+              found.length === 1 ? words.one : words.many
+            } “${escapeHtml(query)}”</h2>
+            <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+              ${found.map(card).join('')}
+            </div>`;
+        })
+        .catch(() => {
+          box.innerHTML = `<p class="text-[16px] text-graphite">${words.failed}</p>`;
+        });
+    }
+  }
+</script>

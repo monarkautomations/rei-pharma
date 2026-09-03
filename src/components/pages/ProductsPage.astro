@@ -1,0 +1,88 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../ProductCard.astro';
+import {
+  getProducts,
+  getCategoriesWithProducts,
+  getOrphanProducts,
+} from '../../lib/catalog';
+import { path, t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+}
+
+const { lang, alternates } = Astro.props;
+
+const all = await getProducts(lang);
+const categories = await getCategoriesWithProducts(lang);
+
+// Vetëm për të njoftuar në terminal nëse një kategori u fshi me produkte brenda.
+await getOrphanProducts(lang);
+
+const meta = {
+  sq: {
+    title: 'Të gjitha produktet — Rei Pharma',
+    description:
+      'Kremra dielli, vitamina, suplemente dhe produkte për flokët. Porosit online dhe paguaj në dorëzim.',
+  },
+  en: {
+    title: 'All products — Rei Pharma',
+    description:
+      'Sunscreens, vitamins, supplements and hair care products. Order online and pay on delivery.',
+  },
+}[lang];
+---
+
+<Base
+  title={meta.title}
+  description={meta.description}
+  lang={lang}
+  alternates={alternates}
+>
+  <section class="mx-auto max-w-[1200px] px-4 py-10 sm:py-14">
+    <h1 class="text-[30px] sm:text-[40px]">{t(lang, 'productsTitle')}</h1>
+    <p class="mt-2 text-[16px] text-graphite">
+      {all.length} {t(lang, 'productsAvailable')}
+    </p>
+
+    {
+      categories.length > 0 && (
+        <nav class="mt-6 flex flex-wrap gap-2" aria-label={t(lang, 'filterByCategory')}>
+          <span class="inline-flex min-h-[44px] items-center rounded-full bg-forest-900 px-5 text-[14px] text-white">
+            {t(lang, 'allProducts')}
+          </span>
+          {categories.map((c) => (
+            <a
+              href={path(lang, 'category', c.slug)}
+              class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500"
+            >
+              {c.name}
+              <span class="ml-2 text-[13px] text-slate">{c.count}</span>
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
+    <div class="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+      {
+        all.map((p, i) => (
+          <ProductCard
+            id={p.slug}
+            name={p.name}
+            price={p.price}
+            oldPrice={p.oldPrice}
+            image={p.image}
+            desc={p.desc}
+            brand={p.brand}
+            inStock={p.inStock}
+            lang={lang}
+            eager={i < 4}
+          />
+        ))
+      }
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,156 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site';
+import { htmlLang, ogLocale, path, t, type Lang } from '../lib/i18n';
+
+interface Props {
+  title: string;
+  description: string;
+  lang?: Lang;
+  /** Foto për shpërndarje në rrjete sociale. Pa të përdoret vitrina. */
+  image?: string;
+  /** Schema shtesë e faqes — p.sh. Product dhe BreadcrumbList. */
+  schemas?: Array<Record<string, unknown>>;
+  /**
+   * E njëjta faqe në gjuhët e tjera, si `{ sq: '/produktet', en: '/en/products' }`.
+   * Prej saj dalin `hreflang` dhe ndërruesi i gjuhës. E detyrueshme që Google
+   * t'i lidhë të dyja versionet — pa të, ato duken si faqe të palidhura.
+   *
+   * Kalo `null` vetëm për faqe që nuk duhen indeksuar (404-a). Tipi e kërkon
+   * shprehimisht, që të mos harrohet pa dashje te një faqe e re.
+   */
+  alternates: Record<Lang, string> | null;
+}
+
+const {
+  title,
+  description,
+  lang = 'sq',
+  image = '/hero-wide-1600.webp',
+  schemas = [],
+  alternates,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(image, Astro.site).href;
+
+const alternateLinks = alternates
+  ? (Object.entries(alternates) as Array<[Lang, string]>).map(([code, href]) => ({
+      lang: htmlLang[code],
+      href: new URL(href, Astro.site).href,
+    }))
+  : [];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Pharmacy',
+  name: site.legalName,
+  alternateName: site.brandName,
+  url: Astro.site?.href,
+  telephone: site.phone,
+  // Foto reale e farmacisë. Ishte '/logo-full.png' — file që nuk ekziston,
+  // dhe Google e shpërfill schema-n me imazh të thyer.
+  image: new URL('/hero-wide-1600.webp', Astro.site).href,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    addressCountry: site.address.country,
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: site.address.lat,
+    longitude: site.address.lng,
+  },
+  hasMap: site.address.mapsUrl,
+  openingHoursSpecification: site.hours.map((h) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: h.schema,
+    opens: h.open,
+    closes: h.close,
+  })),
+};
+---
+
+<!doctype html>
+<html lang={htmlLang[lang]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {
+      alternateLinks.map((alt) => (
+        <link rel="alternate" hreflang={alt.lang} href={alt.href} />
+      ))
+    }
+    {
+      alternates && (
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={new URL(alternates.sq, Astro.site).href}
+        />
+      )
+    }
+    {!alternates && <meta name="robots" content="noindex" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content={ogLocale[lang]} />
+    <meta
+      property="og:locale:alternate"
+      content={ogLocale[lang === 'sq' ? 'en' : 'sq']}
+    />
+    <meta property="og:site_name" content={site.brandName} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#122B25" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(schema)}
+    />
+    {
+      schemas.map((s) => (
+        <script type="application/ld+json" set:html={JSON.stringify(s)} />
+      ))
+    }
+  </head>
+
+  <body class="min-h-screen flex flex-col" data-lang={lang}>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-forest-900 focus:text-white focus:px-4 focus:py-2 focus:rounded"
+    >
+      {t(lang, 'skipToContent')}
+    </a>
+
+    <!-- Te faqet pa përkthim (404), ndërruesi çon te kryefaqja e gjuhës tjetër. -->
+    <Header
+      lang={lang}
+      alternates={alternates ?? { sq: path('sq', 'home'), en: path('en', 'home') }}
+    />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>

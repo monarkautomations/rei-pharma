@@ -1,0 +1,63 @@
+---
+interface Props {
+  width?: number;
+  delay?: number;
+  duration?: number;
+  /** "dark" për sfond të errët — përdor arin e çelët. */
+  tone?: 'light' | 'dark';
+}
+const { width = 280, delay = 0.35, duration = 1.1, tone = 'light' } = Astro.props;
+
+const stroke = tone === 'dark' ? 'var(--color-gold-300)' : 'var(--color-gold-500)';
+const leaf = tone === 'dark' ? 'var(--color-gold-300)' : 'var(--color-forest-900)';
+---
+
+<svg
+  class="flourish"
+  width={width}
+  height={Math.round(width * 0.075)}
+  viewBox="0 0 280 21"
+  fill="none"
+  aria-hidden="true"
+  style={`--fl-delay:${delay}s; --fl-duration:${duration}s;`}
+>
+  <path
+    class="fl-line"
+    d="M2 13 C 60 3, 120 3, 168 8 C 200 11, 232 14, 278 6"
+    stroke={stroke}
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <path
+    class="fl-leaf"
+    d="M150 9 C 158 2, 172 2, 180 9 C 172 16, 158 16, 150 9 Z"
+    fill={leaf}
+  />
+</svg>
+
+<style>
+  .flourish { display: block; overflow: visible; }
+
+  .fl-line {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: draw var(--fl-duration) cubic-bezier(0.33, 0, 0.2, 1) var(--fl-delay) forwards;
+  }
+
+  .fl-leaf {
+    opacity: 0;
+    transform-origin: 165px 9px;
+    animation: settle 0.5s ease-out calc(var(--fl-delay) + var(--fl-duration) * 0.6) forwards;
+  }
+
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes settle {
+    from { opacity: 0; transform: scale(0.4); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fl-line { stroke-dashoffset: 0; animation: none; }
+    .fl-leaf { opacity: 1; transform: none; animation: none; }
+  }
+</style>

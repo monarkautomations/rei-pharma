@@ -1,0 +1,12 @@
+---
+import LegalPage from '../components/pages/LegalPage.astro';
+import { terms } from '../lib/legal';
+import { path } from '../lib/i18n';
+---
+
+<LegalPage
+  lang="sq"
+  page={terms.sq}
+  heading="Kushtet e shitjes"
+  alternates={{ sq: path('sq', 'terms'), en: path('en', 'terms') }}
+/>

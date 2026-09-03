@@ -1,0 +1,259 @@
+---
+import { site } from '../config/site';
+import CartWidget from './CartWidget';
+import Search from './Search.astro';
+import LangSwitch from './LangSwitch.astro';
+import { path, t, type Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+}
+
+const { lang, alternates } = Astro.props;
+
+// Kategoritë me qëllim NUK janë këtu. Ato jetojnë brenda faqes së produkteve
+// si filtra, që klienti të shtojë e fshijë kategori nga CMS-ja pa e prekur
+// navigimin.
+//
+// "Rreth nesh" u hoq nga menuja me kërkesë të klientit. Faqja rri aty ku ishte
+// dhe lidhet nga footer-i — heqja e saj do të prishte linqe dhe do të hiqte
+// përmbajtje që Google e ka indeksuar.
+const nav = [
+  { href: path(lang, 'home'), label: t(lang, 'navHome') },
+  { href: path(lang, 'products'), label: t(lang, 'navProducts') },
+  { href: path(lang, 'blog'), label: t(lang, 'navBlog') },
+  { href: path(lang, 'contact'), label: t(lang, 'navContact') },
+];
+
+const tel = `tel:${site.phone.replace(/\s/g, '')}`;
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+const homeHref = path(lang, 'home').replace(/\/$/, '') || '/';
+
+const isActive = (href: string) => {
+  const clean = href.replace(/\/$/, '') || '/';
+
+  // Kryefaqja krahasohet vetëm saktësisht. Në anglisht ajo është `/en`, që
+  // është prefiks i çdo faqeje angleze — me krahasim me prefiks, "Home" dilte
+  // aktive kudo, bashkë me faqen e vërtetë.
+  if (clean === homeHref) return current === homeHref;
+
+  return current === clean || current.startsWith(`${clean}/`);
+};
+---
+
+<!-- Shiriti i sipërm: orari dhe telefoni. Zhduket në telefon që të mos hajë ekran. -->
+<div class="hidden bg-forest-900 text-bone/80 lg:block">
+  <div
+    class="mx-auto flex max-w-[1200px] items-center justify-between gap-6 px-4 py-2 text-[13px]"
+  >
+    <p class="flex items-center gap-2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v5l3 2"></path>
+      </svg>
+      {site.hours[0].days[lang]}: {site.hours[0].open} – {site.hours[0].close}
+    </p>
+
+    <div class="flex items-center gap-6">
+      <a href={site.address.mapsUrl} target="_blank" rel="noopener" class="hover:text-gold-300">
+        {site.address.street}, {site.address.city}
+      </a>
+      <a href={tel} class="font-medium text-gold-300 hover:text-white">
+        {site.phone}
+      </a>
+      <LangSwitch lang={lang} alternates={alternates} tone="dark" />
+    </div>
+  </div>
+</div>
+
+<header class="sticky top-0 z-40 border-b border-mist bg-white/95 backdrop-blur-md">
+  <div class="mx-auto max-w-[1200px] px-4">
+    <div class="flex h-16 items-center gap-3 lg:h-[76px] lg:gap-6">
+      <a
+        href={path(lang, 'home')}
+        class="shrink-0"
+        aria-label={`${site.brandName} — ${t(lang, 'homeLink')}`}
+      >
+        <!-- Logoja e plotë hyn edhe në 375px që kur butoni i kontaktit u bë
+             ikonë: 158px logo + tri ikona 44px = 290px nga 343px të lira. -->
+        <img
+          src="/logo-lockup.png"
+          alt={site.brandName}
+          width="579"
+          height="132"
+          class="h-9 w-auto lg:h-11"
+        />
+      </a>
+
+      <!-- Kërkimi në desktop: në mes, ku e kërkon syri. -->
+      <div class="hidden min-w-0 flex-1 lg:block">
+        <div class="mx-auto max-w-md">
+          <Search id="search-desktop" lang={lang} />
+        </div>
+      </div>
+
+      <nav class="hidden items-center gap-6 lg:flex" aria-label={t(lang, 'navMain')}>
+        {
+          nav.map((item) => (
+            <a
+              href={item.href}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class:list={[
+                'text-[15px] transition-colors hover:text-gold-600',
+                isActive(item.href) ? 'font-medium text-gold-600' : 'text-forest-900',
+              ]}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="ml-auto flex items-center gap-1 lg:ml-0">
+        <!-- Vetëm ikonë: teksti hante gjerësi që i duhej logos. Emri i plotë
+             mbetet te `aria-label` për lexuesit e ekranit, dhe numri i plotë
+             rri te shiriti i sipërm, te menuja dhe te footer-i. -->
+        <a
+          href={tel}
+          class="grid h-11 w-11 place-items-center rounded-full bg-forest-900 text-white transition-colors hover:bg-forest-700 lg:hidden"
+          aria-label={`${t(lang, 'contactUs')} — ${site.phone}`}
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </a>
+
+        <CartWidget client:load lang={lang} />
+
+        <button
+          type="button"
+          data-nav-open
+          class="grid h-11 w-11 place-items-center rounded-full text-forest-900 hover:bg-bone lg:hidden"
+          aria-label={t(lang, 'openMenu')}
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Kërkimi në telefon: gjithmonë i dukshëm, jo i fshehur pas një ikone. -->
+    <div class="pb-3 lg:hidden">
+      <Search id="search-mobile" lang={lang} />
+    </div>
+  </div>
+</header>
+
+<!-- Paneli i navigimit në telefon -->
+<div id="mobile-nav" data-nav-panel hidden class="fixed inset-0 z-50 lg:hidden">
+  <div data-nav-backdrop class="absolute inset-0 bg-forest-950/60"></div>
+
+  <div
+    class="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col bg-white shadow-xl"
+    role="dialog"
+    aria-modal="true"
+    aria-label={t(lang, 'menu')}
+  >
+    <div class="flex h-16 items-center justify-between border-b border-mist px-4">
+      <img src="/logo-lockup.png" alt={site.brandName} width="579" height="132" class="h-8 w-auto" />
+      <button
+        type="button"
+        data-nav-close
+        class="grid h-11 w-11 place-items-center rounded-full hover:bg-bone"
+        aria-label={t(lang, 'closeMenu')}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-2 py-3" aria-label={t(lang, 'navMain')}>
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            class:list={[
+              'flex min-h-[52px] items-center rounded-md px-4 text-[17px] hover:bg-bone',
+              isActive(item.href) ? 'font-medium text-gold-600' : 'text-forest-900',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="space-y-3 border-t border-mist p-4">
+      <LangSwitch lang={lang} alternates={alternates} tone="light" />
+
+      <a
+        href={tel}
+        class="flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-forest-900 px-4 text-[15px] font-medium text-white"
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        {t(lang, 'contactUs')}
+      </a>
+
+      <p class="text-center text-[13px] text-slate">
+        {site.hours[0].days[lang]}: {site.hours[0].open} – {site.hours[0].close}
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const panel = document.querySelector<HTMLElement>('[data-nav-panel]');
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-nav-open]');
+  const closeEls = document.querySelectorAll('[data-nav-close], [data-nav-backdrop]');
+
+  function open() {
+    if (!panel || !openBtn) return;
+    panel.hidden = false;
+    openBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    panel.querySelector<HTMLElement>('[data-nav-close]')?.focus();
+  }
+
+  function close() {
+    if (!panel || !openBtn) return;
+    panel.hidden = true;
+    openBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    openBtn.focus();
+  }
+
+  openBtn?.addEventListener('click', open);
+  closeEls.forEach((el) => el.addEventListener('click', close));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel && !panel.hidden) close();
+  });
+
+  // Fokusi nuk duhet të dalë nga paneli sa është i hapur.
+  panel?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const focusables = panel.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])',
+    );
+    if (focusables.length === 0) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+</script>

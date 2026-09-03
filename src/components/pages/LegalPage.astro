@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import type { LegalPage } from '../../lib/legal';
+import type { Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+  page: LegalPage;
+  /** Titulli i dukshëm te faqja, pa emrin e markës që rri te <title>. */
+  heading: string;
+}
+
+const { lang, alternates, page, heading } = Astro.props;
+---
+
+<Base
+  title={page.title}
+  description={page.description}
+  lang={lang}
+  alternates={alternates}
+>
+  <section class="mx-auto max-w-[720px] px-4 py-10 sm:py-16">
+    <h1 class="text-[30px] sm:text-[38px]">{heading}</h1>
+    <div class="rule-gold mt-5 h-px w-32"></div>
+
+    <div class="mt-8 space-y-6 text-[16px] leading-relaxed text-graphite">
+      {
+        page.sections.map((section) => (
+          <div>
+            <h2 class="text-[20px] text-forest-900">{section.heading}</h2>
+            <p class="mt-2">{section.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>

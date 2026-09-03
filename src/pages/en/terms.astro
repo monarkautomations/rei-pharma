@@ -1,0 +1,12 @@
+---
+import LegalPage from '../../components/pages/LegalPage.astro';
+import { terms } from '../../lib/legal';
+import { path } from '../../lib/i18n';
+---
+
+<LegalPage
+  lang="en"
+  page={terms.en}
+  heading="Terms of sale"
+  alternates={{ sq: path('sq', 'terms'), en: path('en', 'terms') }}
+/>

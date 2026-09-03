@@ -1,0 +1,35 @@
+---
+import BlogPostPage from '../../../components/pages/BlogPostPage.astro';
+import { getPosts, findTranslation } from '../../../lib/catalog';
+import { path } from '../../../lib/i18n';
+
+export async function getStaticPaths() {
+  const posts = await getPosts('en');
+
+  return Promise.all(
+    posts.map(async (post) => ({
+      params: { slug: post.id },
+      props: {
+        post,
+        related: posts.filter((p) => p.id !== post.id).slice(0, 3),
+        // Nëse përkthimi mungon, ndërruesi i gjuhës çon te lista e blogut
+        // në gjuhën tjetër — më mirë se një faqe që nuk ekziston.
+        translated: await findTranslation(post.id, 'en'),
+      },
+    })),
+  );
+}
+
+const { post, related, translated } = Astro.props;
+const { slug } = Astro.params;
+---
+
+<BlogPostPage
+  lang="en"
+  post={post}
+  related={related}
+  alternates={{
+    en: path('en', 'post', slug!),
+    sq: translated ? path('sq', 'post', translated) : path('sq', 'blog'),
+  }}
+/>

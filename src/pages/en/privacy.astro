@@ -1,0 +1,12 @@
+---
+import LegalPage from '../../components/pages/LegalPage.astro';
+import { privacy } from '../../lib/legal';
+import { path } from '../../lib/i18n';
+---
+
+<LegalPage
+  lang="en"
+  page={privacy.en}
+  heading="Privacy policy"
+  alternates={{ sq: path('sq', 'privacy'), en: path('en', 'privacy') }}
+/>

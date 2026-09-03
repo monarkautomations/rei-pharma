@@ -1,0 +1,37 @@
+---
+import CategoryPage from '../../components/pages/CategoryPage.astro';
+import { getCategories, getProducts } from '../../lib/catalog';
+import { path } from '../../lib/i18n';
+
+export async function getStaticPaths() {
+  const [categories, products] = await Promise.all([
+    getCategories('sq'),
+    getProducts('sq'),
+  ]);
+
+  return categories.map((c) => ({
+    params: { slug: c.slug },
+    props: {
+      category: c,
+      products: products.filter((p) => p.category === c.slug),
+      // Kategoritë e tjera si filtra — navigimi mes tyre rri brenda faqes,
+      // jo në navbar.
+      siblings: categories.filter((s) => s.slug !== c.slug),
+    },
+  }));
+}
+
+const { category, products, siblings } = Astro.props;
+const { slug } = Astro.params;
+---
+
+<CategoryPage
+  lang="sq"
+  category={category}
+  products={products}
+  siblings={siblings}
+  alternates={{
+    sq: path('sq', 'category', slug!),
+    en: path('en', 'category', slug!),
+  }}
+/>

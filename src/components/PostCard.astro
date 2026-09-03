@@ -1,0 +1,85 @@
+---
+import CoverImage from './CoverImage.astro';
+import { formatDate } from '../lib/catalog';
+import { path, t, type Lang } from '../lib/i18n';
+
+interface Props {
+  slug: string;
+  title: string;
+  excerpt: string;
+  cover?: string;
+  coverAlt?: string;
+  tag?: string;
+  date: Date;
+  lang: Lang;
+  eager?: boolean;
+}
+
+const {
+  slug,
+  title,
+  excerpt,
+  cover,
+  coverAlt,
+  tag,
+  date,
+  lang,
+  eager = false,
+} = Astro.props;
+
+const href = path(lang, 'post', slug);
+---
+
+<article
+  class="group relative flex flex-col overflow-hidden rounded-[14px] border border-mist bg-white transition-colors hover:border-gold-500"
+>
+  <div class="relative">
+    {
+      cover ? (
+        <CoverImage
+          src={cover}
+          alt={coverAlt ?? ''}
+          class="aspect-[16/10]"
+          eager={eager}
+          width={800}
+          height={500}
+        />
+      ) : (
+        <div class="grid aspect-[16/10] w-full place-items-center bg-gradient-to-br from-forest-50 to-gold-50">
+          <span class="text-[13px] text-slate">{t(lang, 'photoSoon')}</span>
+        </div>
+      )
+    }
+
+    {
+      tag && (
+        <span class="absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-[12px] font-medium text-gold-600 backdrop-blur">
+          {tag}
+        </span>
+      )
+    }
+  </div>
+
+  <div class="flex flex-1 flex-col p-5">
+    <time datetime={date.toISOString()} class="text-[13px] text-slate">
+      {formatDate(date, lang)}
+    </time>
+
+    <h3 class="mt-2 text-[20px] leading-snug">
+      <a href={href} class="after:absolute after:inset-0 group-hover:text-gold-600">
+        {title}
+      </a>
+    </h3>
+
+    <p class="mt-2 line-clamp-3 flex-1 text-[15px] leading-relaxed text-graphite">
+      {excerpt}
+    </p>
+
+    <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium text-gold-600">
+      {t(lang, 'readMore')}
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="transition-transform group-hover:translate-x-0.5">
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </span>
+  </div>
+</article>

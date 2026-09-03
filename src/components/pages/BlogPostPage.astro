@@ -1,0 +1,272 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PostCard from '../PostCard.astro';
+import CoverImage from '../CoverImage.astro';
+import { formatDate } from '../../lib/catalog';
+import { site, waLink } from '../../config/site';
+import { path, t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+  post: CollectionEntry<'posts'>;
+  related: CollectionEntry<'posts'>[];
+}
+
+const { lang, alternates, post, related } = Astro.props;
+const { Content } = await render(post);
+
+const url = new URL(path(lang, 'post', post.id), Astro.site).href;
+const shareImage = post.data.cover ?? '/hero-wide-1600.webp';
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.excerpt,
+  image: new URL(shareImage, Astro.site).href,
+  inLanguage: lang,
+  datePublished: post.data.date.toISOString(),
+  ...(post.data.updated ? { dateModified: post.data.updated.toISOString() } : {}),
+  author: { '@type': 'Organization', name: post.data.author },
+  publisher: {
+    '@type': 'Pharmacy',
+    name: site.legalName,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: site.address.street,
+      addressLocality: site.address.city,
+      addressCountry: site.address.country,
+    },
+  },
+  mainEntityOfPage: url,
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { name: t(lang, 'home'), item: new URL(path(lang, 'home'), Astro.site).href },
+    { name: t(lang, 'blogTitle'), item: new URL(path(lang, 'blog'), Astro.site).href },
+    { name: post.data.title, item: url },
+  ].map((entry, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: entry.name,
+    item: entry.item,
+  })),
+};
+
+const askMessage =
+  lang === 'en'
+    ? `Hello! I read the article "${post.data.title}" and have a question.`
+    : `Përshëndetje! Lexova shkrimin "${post.data.title}" dhe kam një pyetje.`;
+---
+
+<Base
+  title={`${post.data.title} — ${site.brandName}`}
+  description={post.data.excerpt}
+  lang={lang}
+  image={shareImage}
+  schemas={[articleSchema, breadcrumbSchema]}
+  alternates={alternates}
+>
+  <article>
+    <header class="border-b border-mist bg-gradient-to-b from-forest-50 to-white">
+      <div class="mx-auto max-w-[760px] px-4 py-10 sm:py-14">
+        <nav class="text-[14px] text-slate" aria-label={t(lang, 'breadcrumb')}>
+          <a href={path(lang, 'home')} class="hover:text-forest-900">{t(lang, 'home')}</a>
+          <span class="px-1.5">/</span>
+          <a href={path(lang, 'blog')} class="hover:text-forest-900">
+            {t(lang, 'blogTitle')}
+          </a>
+        </nav>
+
+        {post.data.tag && <p class="eyebrow mt-5">{post.data.tag}</p>}
+
+        <h1 class="mt-2 text-[30px] leading-tight sm:text-[44px]">
+          {post.data.title}
+        </h1>
+
+        <p class="mt-4 text-[18px] leading-relaxed text-graphite">
+          {post.data.excerpt}
+        </p>
+
+        <p class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-slate">
+          <span>{post.data.author}</span>
+          <span aria-hidden="true">·</span>
+          <time datetime={post.data.date.toISOString()}>
+            {formatDate(post.data.date, lang)}
+          </time>
+        </p>
+      </div>
+    </header>
+
+    {
+      post.data.cover && (
+        <div class="mx-auto max-w-[900px] px-4">
+          <CoverImage
+            src={post.data.cover}
+            alt={post.data.coverAlt ?? ''}
+            class="-mt-2 aspect-[16/10] w-full rounded-[14px] sm:-mt-4"
+            eager
+            width={1200}
+            height={750}
+          />
+        </div>
+      )
+    }
+
+    <div
+      class="prose-rei mx-auto max-w-[720px] px-4 py-10 text-[17px] leading-[1.75] text-graphite sm:py-14"
+    >
+      <Content />
+    </div>
+
+    <div class="mx-auto max-w-[720px] px-4 pb-14">
+      <div class="rounded-[14px] bg-forest-900 p-6 text-bone sm:p-8">
+        <h2 class="text-[24px] text-white">{t(lang, 'haveAQuestion')}</h2>
+        <p class="mt-2 text-[15px] leading-relaxed text-bone/80">
+          {t(lang, 'haveAQuestionText')}
+        </p>
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+          <a
+            href={waLink(askMessage)}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex min-h-[50px] items-center justify-center rounded-full bg-gold-500 px-6 text-[15px] font-medium text-forest-950 transition-colors hover:bg-gold-400"
+          >
+            {t(lang, 'writeOnWhatsApp')}
+          </a>
+          <a
+            href={path(lang, 'products')}
+            class="inline-flex min-h-[50px] items-center justify-center rounded-full border border-bone/30 px-6 text-[15px] font-medium text-bone transition-colors hover:bg-white/10"
+          >
+            {t(lang, 'seeProducts')}
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  {
+    related.length > 0 && (
+      <section class="border-t border-mist bg-cream">
+        <div class="mx-auto max-w-[1200px] px-4 py-12 sm:py-16">
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 class="text-[26px] sm:text-[32px]">{t(lang, 'readNext')}</h2>
+            <a
+              href={path(lang, 'blog')}
+              class="shrink-0 text-[15px] font-medium text-gold-600 hover:text-forest-900"
+            >
+              {t(lang, 'seeAll')}
+            </a>
+          </div>
+
+          <div class="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((p) => (
+              <PostCard
+                slug={p.id}
+                title={p.data.title}
+                excerpt={p.data.excerpt}
+                cover={p.data.cover}
+                coverAlt={p.data.coverAlt}
+                tag={p.data.tag}
+                date={p.data.date}
+                lang={lang}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style is:global>
+  /* Stili i tekstit të shkrimit. Markdown-i vjen pa klasa, ndaj stilohet këtu. */
+  .prose-rei h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1.2;
+    color: var(--color-forest-900);
+    margin-top: 2.2em;
+    margin-bottom: 0.5em;
+  }
+
+  .prose-rei h3 {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-forest-900);
+    margin-top: 1.8em;
+    margin-bottom: 0.4em;
+  }
+
+  .prose-rei p {
+    margin-bottom: 1.15em;
+  }
+
+  .prose-rei ul,
+  .prose-rei ol {
+    margin: 0 0 1.4em;
+    padding-left: 1.3em;
+  }
+
+  .prose-rei ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .prose-rei ul li {
+    position: relative;
+    padding-left: 1.4em;
+    margin-bottom: 0.55em;
+  }
+
+  .prose-rei ul li::before {
+    content: '';
+    position: absolute;
+    left: 0.25em;
+    top: 0.68em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-gold-500);
+  }
+
+  .prose-rei ol {
+    list-style: decimal;
+  }
+
+  .prose-rei ol li {
+    margin-bottom: 0.55em;
+    padding-left: 0.3em;
+  }
+
+  .prose-rei strong {
+    color: var(--color-forest-900);
+    font-weight: 600;
+  }
+
+  .prose-rei a {
+    color: var(--color-gold-600);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .prose-rei hr {
+    border: 0;
+    height: 1px;
+    background: var(--color-mist);
+    margin: 2.6em 0 1.8em;
+  }
+
+  /* Shënimi ligjor në fund — më i vogël dhe i qetë. */
+  .prose-rei hr + p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--color-slate);
+  }
+</style>

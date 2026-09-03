@@ -1,0 +1,131 @@
+---
+import Base from '../../layouts/Base.astro';
+import StatsCounter from '../StatsCounter.astro';
+import { site, waLink } from '../../config/site';
+import { path, t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+}
+
+const { lang, alternates } = Astro.props;
+
+const ask = lang === 'en' ? 'Hello! I have a question.' : 'Përshëndetje! Kam një pyetje.';
+
+const meta = {
+  sq: {
+    title: 'Rreth nesh — Rei Pharma',
+    description:
+      'Farmaci Rei në Rrugën Albanopoli, Tiranë. Produkte pa recetë, këshillë farmacisti dhe porosi me WhatsApp me pagesë në dorëzim.',
+  },
+  en: {
+    title: 'About us — Rei Pharma',
+    description:
+      'Farmaci Rei on Rruga Albanopoli, Tirana. Non-prescription products, pharmacist advice and WhatsApp orders with cash on delivery.',
+  },
+}[lang];
+
+const values = [
+  { title: t(lang, 'valueAdviceTitle'), text: t(lang, 'valueAdviceText') },
+  { title: t(lang, 'valueOtcTitle'), text: t(lang, 'valueOtcText') },
+  { title: t(lang, 'valuePayTitle'), text: t(lang, 'valuePayText') },
+];
+---
+
+<Base
+  title={meta.title}
+  description={meta.description}
+  lang={lang}
+  alternates={alternates}
+>
+  <section class="border-b border-mist bg-gradient-to-b from-forest-50 to-white">
+    <div class="mx-auto max-w-[1200px] px-4 py-12 sm:py-16">
+      <p class="eyebrow">{t(lang, 'whoWeAre')}</p>
+      <h1 class="mt-2 text-[32px] sm:text-[46px]">{t(lang, 'aboutTitle')}</h1>
+      <p class="mt-3 max-w-2xl text-[18px] leading-relaxed text-graphite">
+        {t(lang, 'aboutLead')}
+      </p>
+      <div class="rule-gold mt-6 h-px w-40"></div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-[1200px] px-4 py-12 sm:py-16">
+    <div class="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+      <div class="space-y-5 text-[17px] leading-relaxed text-graphite" data-reveal>
+        <p>{t(lang, 'aboutP1')}</p>
+        <p>{t(lang, 'aboutP2')}</p>
+        <p>{t(lang, 'aboutP3')}</p>
+
+        <div class="flex flex-col gap-3 pt-3 sm:flex-row">
+          <a
+            href={waLink(ask)}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex min-h-[52px] items-center justify-center rounded-full bg-forest-900 px-7 text-[15px] font-medium text-white transition-colors hover:bg-forest-700"
+          >
+            {t(lang, 'writeOnWhatsApp')}
+          </a>
+          <a
+            href={path(lang, 'products')}
+            class="inline-flex min-h-[52px] items-center justify-center rounded-full border border-forest-900/20 px-7 text-[15px] font-medium transition-colors hover:bg-bone"
+          >
+            {t(lang, 'seeProducts')}
+          </a>
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-[14px] border border-mist" data-reveal>
+        <img
+          src="/hero-wide-1000.webp"
+          alt="Farmaci Rei, Rruga Albanopoli"
+          width="1000"
+          height="563"
+          loading="lazy"
+          decoding="async"
+          class="aspect-[4/3] w-full object-cover"
+        />
+      </div>
+    </div>
+  </section>
+
+  <StatsCounter />
+
+  <section class="mx-auto max-w-[1200px] px-4 py-14 sm:py-20">
+    <h2 class="text-[28px] sm:text-[36px]" data-reveal>{t(lang, 'howWeWork')}</h2>
+
+    <div class="mt-8 grid gap-5 sm:grid-cols-3">
+      {
+        values.map((value) => (
+          <div
+            data-reveal
+            class="rounded-[14px] border border-mist p-6 transition-colors hover:border-gold-500"
+          >
+            <div class="rule-gold h-px w-10"></div>
+            <h3 class="mt-4 text-[21px]">{value.title}</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-graphite">
+              {value.text}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="border-t border-mist bg-cream">
+    <div class="mx-auto max-w-[760px] px-4 py-14 text-center sm:py-20">
+      <h2 class="text-[28px] sm:text-[34px]">{t(lang, 'findUsAt')}</h2>
+      <ul class="mt-5 space-y-1 text-[16px] text-graphite">
+        {site.hours.map((h) => <li>{h.days[lang]}: {h.open} – {h.close}</li>)}
+      </ul>
+      <a
+        href={site.address.mapsUrl}
+        target="_blank"
+        rel="noopener"
+        class="mt-7 inline-flex min-h-[52px] items-center justify-center rounded-full bg-forest-900 px-8 text-[15px] font-medium text-white transition-colors hover:bg-forest-700"
+      >
+        {t(lang, 'openInMaps')}
+      </a>
+    </div>
+  </section>
+</Base>

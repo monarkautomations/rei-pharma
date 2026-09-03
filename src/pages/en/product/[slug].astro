@@ -1,0 +1,38 @@
+---
+import ProductPage from '../../../components/pages/ProductPage.astro';
+import { getCategories, getProducts } from '../../../lib/catalog';
+import { path } from '../../../lib/i18n';
+
+export async function getStaticPaths() {
+  const [products, categories] = await Promise.all([
+    getProducts('en'),
+    getCategories('en'),
+  ]);
+
+  return products.map((p) => ({
+    params: { slug: p.slug },
+    props: {
+      product: p,
+      // Kategoria mund të jetë fshirë nga CMS-ja. Faqja duhet të hapet gjithsesi.
+      category: categories.find((c) => c.slug === p.category) ?? null,
+      related: products
+        .filter((r) => r.slug !== p.slug && r.category === p.category)
+        .slice(0, 4),
+    },
+  }));
+}
+
+const { product, category, related } = Astro.props;
+const { slug } = Astro.params;
+---
+
+<ProductPage
+  lang="en"
+  product={product}
+  category={category}
+  related={related}
+  alternates={{
+    sq: path('sq', 'product', slug!),
+    en: path('en', 'product', slug!),
+  }}
+/>

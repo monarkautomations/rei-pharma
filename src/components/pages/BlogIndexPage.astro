@@ -1,0 +1,135 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostCard from '../PostCard.astro';
+import CoverImage from '../CoverImage.astro';
+import { getPosts } from '../../lib/catalog';
+import { site } from '../../config/site';
+import { path, t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+}
+
+const { lang, alternates } = Astro.props;
+
+const posts = await getPosts(lang);
+const [featured, ...rest] = posts;
+
+const meta = {
+  sq: {
+    title: 'Këshilla nga farmacia — Rei Pharma',
+    description:
+      'Shkrime të shkurtra nga farmacistët e Farmaci Rei: kujdesi ndaj diellit, vitaminat, kujdesi për flokët.',
+  },
+  en: {
+    title: 'Advice from the pharmacy — Rei Pharma',
+    description:
+      'Short reads from the pharmacists at Farmaci Rei: sun care, vitamins, hair care.',
+  },
+}[lang];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: `${t(lang, 'blogTitle')} — ${site.brandName}`,
+  inLanguage: lang,
+  url: new URL(path(lang, 'blog'), Astro.site).href,
+  publisher: { '@type': 'Pharmacy', name: site.legalName },
+  blogPost: posts.map((p) => ({
+    '@type': 'BlogPosting',
+    headline: p.data.title,
+    datePublished: p.data.date.toISOString(),
+    url: new URL(path(lang, 'post', p.id), Astro.site).href,
+  })),
+};
+---
+
+<Base
+  title={meta.title}
+  description={meta.description}
+  lang={lang}
+  alternates={alternates}
+  schemas={posts.length > 0 ? [schema] : []}
+>
+  <section class="border-b border-mist bg-gradient-to-b from-forest-50 to-white">
+    <div class="mx-auto max-w-[1200px] px-4 py-12 sm:py-16">
+      <p class="eyebrow">{t(lang, 'blogEyebrow')}</p>
+      <h1 class="mt-2 text-[32px] sm:text-[46px]">{t(lang, 'blogTitle')}</h1>
+      <p class="mt-3 max-w-xl text-[17px] leading-relaxed text-graphite">
+        {t(lang, 'blogIntro')}
+      </p>
+      <div class="rule-gold mt-6 h-px w-40"></div>
+    </div>
+  </section>
+
+  {
+    posts.length === 0 ? (
+      <div class="mx-auto max-w-[720px] px-4 py-20 text-center">
+        <p class="text-[17px] text-graphite">{t(lang, 'blogEmpty')}</p>
+      </div>
+    ) : (
+      <div class="mx-auto max-w-[1200px] px-4 py-12 sm:py-16">
+        {/* Posti i fundit merr më shumë hapësirë. */}
+        <div data-reveal>
+          <a
+            href={path(lang, 'post', featured.id)}
+            class="group grid gap-6 overflow-hidden rounded-[14px] border border-mist transition-colors hover:border-gold-500 lg:grid-cols-2 lg:gap-0"
+          >
+            {/* Raport fiks edhe në desktop: `lg:h-full` e shtrinte foton sa
+                kolona e tekstit dhe e priste më keq sa më i gjatë teksti. */}
+            {featured.data.cover ? (
+              <CoverImage
+                src={featured.data.cover}
+                alt={featured.data.coverAlt ?? ''}
+                class="aspect-[16/10] lg:aspect-[4/3]"
+                eager
+                width={900}
+                height={600}
+              />
+            ) : (
+              <div class="grid aspect-[16/10] w-full place-items-center bg-gradient-to-br from-forest-50 to-gold-50 lg:aspect-[4/3]">
+                <span class="text-[13px] text-slate">{t(lang, 'photoSoon')}</span>
+              </div>
+            )}
+
+            <div class="flex flex-col justify-center p-6 sm:p-10">
+              {featured.data.tag && <p class="eyebrow">{featured.data.tag}</p>}
+              <h2 class="mt-2 text-[26px] leading-tight sm:text-[34px]">
+                <span class="group-hover:text-gold-600">{featured.data.title}</span>
+              </h2>
+              <p class="mt-3 text-[16px] leading-relaxed text-graphite">
+                {featured.data.excerpt}
+              </p>
+              <span class="mt-5 inline-flex items-center gap-1.5 text-[15px] font-medium text-gold-600">
+                {t(lang, 'readArticle')}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="transition-transform group-hover:translate-x-0.5">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </div>
+          </a>
+        </div>
+
+        {rest.length > 0 && (
+          <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {rest.map((p) => (
+              <div data-reveal>
+                <PostCard
+                  slug={p.id}
+                  title={p.data.title}
+                  excerpt={p.data.excerpt}
+                  cover={p.data.cover}
+                  coverAlt={p.data.coverAlt}
+                  tag={p.data.tag}
+                  date={p.data.date}
+                  lang={lang}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+</Base>

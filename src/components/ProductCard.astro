@@ -1,0 +1,145 @@
+---
+import AddToCart from './AddToCart';
+import { formatPrice } from '../config/site';
+import { path, t, type Lang } from '../lib/i18n';
+
+interface Props {
+  id: string;
+  name: string;
+  price: number;
+  oldPrice?: number;
+  image: string;
+  desc: string;
+  brand?: string;
+  inStock: boolean;
+  lang: Lang;
+  /** Kartat e para ngarkohen menjëherë, pjesa tjetër me lazy. */
+  eager?: boolean;
+}
+
+const {
+  id,
+  name,
+  price,
+  oldPrice,
+  image,
+  desc,
+  brand,
+  inStock,
+  lang,
+  eager = false,
+} = Astro.props;
+
+const href = path(lang, 'product', id);
+// Placeholder-i është vizatim, jo foto — nuk duhet prerë nga object-cover.
+const isPlaceholder = image === '/produkt-placeholder.svg';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name,
+  description: desc,
+  image: new URL(image, Astro.site).href,
+  url: new URL(href, Astro.site).href,
+  ...(brand && brand !== 'PLACEHOLDER' ? { brand: { '@type': 'Brand', name: brand } } : {}),
+  offers: {
+    '@type': 'Offer',
+    price,
+    priceCurrency: 'ALL',
+    url: new URL(href, Astro.site).href,
+    availability: inStock
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock',
+  },
+};
+---
+
+<!--
+  E gjithë karta klikohet, por lidhja e vërtetë rri vetëm te titulli dhe
+  zgjerohet mbi kartën me `after:absolute`. Butoni i shportës ngrihet mbi të me
+  `relative z-10`, që klikimi mbi "Shto në shportë" të mos hapë faqen.
+-->
+<article
+  class="group relative flex flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4"
+>
+  <div class="relative overflow-hidden rounded-md bg-bone">
+    <img
+      src={image}
+      alt={name}
+      width="600"
+      height="800"
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      class:list={[
+        'aspect-[3/4] w-full transition-transform duration-300 group-hover:scale-[1.03]',
+        isPlaceholder ? 'object-contain p-6' : 'object-cover',
+      ]}
+    />
+
+    {
+      oldPrice && inStock && (
+        <span class="absolute top-2 left-2 rounded-full bg-gold-50 px-2.5 py-1 text-[12px] font-medium text-gold-600">
+          {t(lang, 'onSale')}
+        </span>
+      )
+    }
+    {
+      !inStock && (
+        <span class="absolute top-2 left-2 rounded-full bg-white/95 px-2.5 py-1 text-[12px] font-medium text-graphite">
+          {t(lang, 'outOfStock')}
+        </span>
+      )
+    }
+  </div>
+
+  <h3 class="mt-3 font-sans text-[15px] leading-snug text-forest-900">
+    <a
+      href={href}
+      class="after:absolute after:inset-0 after:rounded-[14px] group-hover:text-gold-600"
+    >
+      {name}
+    </a>
+  </h3>
+
+  <!--
+    Pa `flex-1`: bashkë me `line-clamp-2` kutia rritej përtej dy rreshtave dhe
+    rreshti i tretë dilte i prerë përgjysmë. Hapësira e mbetur shtyhet poshtë
+    me `mt-auto` te rreshti i çmimit, që çmimet të rreshtohen mes kartave.
+  -->
+  <p class="mt-1 line-clamp-2 text-[13px] leading-relaxed text-slate">
+    {desc}
+  </p>
+
+  <!--
+    Çmimi majtas, shporta djathtas. Butoni i gjerë me tekst hante gjysmën e
+    kartës në telefon; ikona e lë vendin te emri dhe çmimi, që janë arsyeja
+    pse dikush e shikon kartën. Emri i produktit rri te `aria-label`.
+  -->
+  <div class="relative z-10 mt-auto flex items-end justify-between gap-3 pt-3">
+    <div class="flex min-w-0 flex-wrap items-baseline gap-x-2">
+      <span class="text-[19px] font-medium tabular-nums text-forest-900">
+        {formatPrice(price)}
+      </span>
+      {
+        oldPrice && (
+          <span class="text-[14px] tabular-nums text-slate line-through">
+            {formatPrice(oldPrice)}
+          </span>
+        )
+      }
+    </div>
+
+    <AddToCart
+      client:visible
+      id={id}
+      name={name}
+      price={price}
+      image={image}
+      inStock={inStock}
+      lang={lang}
+      variant="icon"
+    />
+  </div>
+
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+</article>
