@@ -9,8 +9,7 @@ const categories = defineCollection({
     name_en: z.string(),
     blurb_sq: z.string(),
     blurb_en: z.string(),
-    // Foto e kategorisë. Opsionale — pa të përdoret pamja pa foto.
-    image: z.string().optional(),
+    // Kategoritë nuk kanë foto me qëllim — fotot i mban produkti.
     order: z.number().default(99),
   }),
 });

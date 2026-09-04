@@ -6,7 +6,6 @@ export type Category = {
   slug: string;
   name: string;
   blurb: string;
-  image?: string;
   order: number;
 };
 
@@ -31,7 +30,6 @@ function toCategory(entry: CollectionEntry<'categories'>, lang: Lang): Category 
     slug: entry.id,
     name: lang === 'en' ? entry.data.name_en : entry.data.name_sq,
     blurb: lang === 'en' ? entry.data.blurb_en : entry.data.blurb_sq,
-    image: entry.data.image,
     order: entry.data.order,
   };
 }

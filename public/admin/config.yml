@@ -35,19 +35,14 @@ collections:
     format: "frontmatter"
     extension: "md"
     summary: "{{name_sq}}"
-    # Mbivendosje të vendit ku shkojnë fotot — DUHET vetëm te niveli i
-    # koleksionit, jo te fusha. Sveltia CMS nuk i lexon fare mbivendosjet e
-    # vendosura brenda një fushe (provuar: një foto shkoi te
-    # src/content/categories/public/foto/ në vend të public/foto/, sepse
-    # media_folder pa "/" para llogaritet relativ ndaj dosjes së koleksionit).
-    media_folder: "/public/foto"
-    public_folder: "/foto"
+    # Kategoritë NUK kanë foto me qëllim — fotot shkojnë te produktet.
+    # Dikur kishte një fushë "Foto (opsionale)" këtu; u hoq sepse asnjë faqe
+    # nuk e shfaqte, dhe klienti ngarkoi një foto që s'dukej askund.
     fields:
       - { label: "Emri (shqip)", name: "name_sq", widget: "string", required: true }
       - { label: "Emri (anglisht)", name: "name_en", widget: "string", required: true }
       - { label: "Përshkrim i shkurtër (shqip)", name: "blurb_sq", widget: "text", required: true }
       - { label: "Përshkrim i shkurtër (anglisht)", name: "blurb_en", widget: "text", required: true }
-      - { label: "Foto (opsionale)", name: "image", widget: "image", required: false }
       - label: "Radha e shfaqjes"
         name: "order"
         widget: "number"

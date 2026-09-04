@@ -31,7 +31,10 @@ const {
 } = Astro.props;
 
 const href = path(lang, 'product', id);
-// Placeholder-i është vizatim, jo foto — nuk duhet prerë nga object-cover.
+// Asnjë foto produkti nuk pritet: klienti ngarkon nga CMS-ja çfarë forme të
+// ketë, dhe `object-cover` i hante deri në gjysmën (provuar: një foto 1255x848
+// humbte 49% të gjerësisë brenda kutisë 3/4). Vetëm hapësira ndryshon —
+// placeholder-i merr më shumë, që vizatimi gri të mos duket i mbushur.
 const isPlaceholder = image === '/produkt-placeholder.svg';
 
 const schema = {
@@ -72,7 +75,8 @@ const schema = {
       decoding="async"
       class:list={[
         'aspect-[3/4] w-full transition-transform duration-300 group-hover:scale-[1.03]',
-        isPlaceholder ? 'object-contain p-6' : 'object-cover',
+        'object-contain',
+        isPlaceholder ? 'p-6' : 'p-2',
       ]}
     />
 

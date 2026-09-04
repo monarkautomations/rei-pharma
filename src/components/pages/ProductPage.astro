@@ -132,8 +132,9 @@ const askMessage =
           decoding="async"
           class:list={[
             'aspect-square w-full lg:aspect-[3/4]',
-            // Placeholder-i është vizatim, jo foto — nuk duhet prerë.
-            isPlaceholder ? 'object-contain p-10' : 'object-cover',
+            // Asnjë foto nuk pritet — shih shënimin te ProductCard.astro.
+            'object-contain',
+            isPlaceholder ? 'p-10' : 'p-6',
           ]}
         />
         {
