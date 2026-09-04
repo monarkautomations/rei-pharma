@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
+import CoverImage from '../CoverImage.astro';
 import type { Category, Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
 
@@ -19,8 +20,24 @@ const { lang, alternates, category, products, siblings } = Astro.props;
   title={`${category.name} — Rei Pharma`}
   description={category.blurb}
   lang={lang}
+  image={category.image}
   alternates={alternates}
 >
+  {
+    category.image && (
+      <div class="mx-auto max-w-[1200px] px-4 pt-8 sm:pt-10">
+        <CoverImage
+          src={category.image}
+          alt=""
+          class="aspect-[21/9] rounded-[14px]"
+          eager
+          width={1200}
+          height={514}
+        />
+      </div>
+    )
+  }
+
   <section class="mx-auto max-w-[1200px] px-4 py-10 sm:py-14">
     <nav class="text-[14px] text-slate" aria-label={t(lang, 'breadcrumb')}>
       <a href={path(lang, 'home')} class="hover:text-forest-900">{t(lang, 'home')}</a>

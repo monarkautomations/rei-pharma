@@ -148,6 +148,15 @@ Fotot e ngarkuara nga CMS-ja shkojnë te `public/foto` (produkte, kategori) ose
 `public/blog` (kapakët e shkrimeve) — të dyja tashmë të mbuluara nga
 `npm run fotot`.
 
+**Kurth i provuar:** `media_folder`/`public_folder` DUHEN te niveli i
+koleksionit (siç janë tani), KURRË te fusha individuale (`image:`, `cover:`).
+Sveltia CMS i shpërfill heshtazi mbivendosjet e vendosura te fusha — klienti
+ngarkoi një foto kategorie dhe shkoi te `src/content/categories/public/foto/`
+në vend të `public/foto/`. Shih Sveltia CMS discussion #190. Nëse shtohet
+koleksion i ri me foto, vendos `media_folder: "/public/..."` (me `/` — e
+detyrueshme që të llogaritet nga rrënja e repos, jo nga dosja e koleksionit)
+te vetë koleksioni, jo brenda `fields:`.
+
 ### Logoja
 
 Origjinali është `public/logo-full.jpg` — katror, me sfond, i padobishëm në një

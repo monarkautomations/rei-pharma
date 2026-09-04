@@ -6,6 +6,7 @@ import PostCard from '../PostCard.astro';
 import TrustStrip from '../TrustStrip.astro';
 import StatsCounter from '../StatsCounter.astro';
 import AuroraBackground from '../AuroraBackground.astro';
+import CoverImage from '../CoverImage.astro';
 import { site, waLink } from '../../config/site';
 import { getProducts, getCategoriesWithProducts, getPosts } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
@@ -168,23 +169,41 @@ const meta = {
           <a
             href={path(lang, 'category', c.slug)}
             data-reveal
-            class="group relative flex flex-col overflow-hidden rounded-[14px] border border-mist bg-white p-7 transition-all hover:border-gold-500 hover:shadow-[0_18px_40px_-24px_rgba(18,43,37,0.35)]"
+            class="group relative flex flex-col overflow-hidden rounded-[14px] border border-mist bg-white transition-all hover:border-gold-500 hover:shadow-[0_18px_40px_-24px_rgba(18,43,37,0.35)]"
           >
-            <span
-              class="pointer-events-none absolute -top-14 -right-14 h-32 w-32 rounded-full bg-gold-50 opacity-0 transition-opacity group-hover:opacity-100"
-              aria-hidden="true"
-            />
+            {
+              c.image && (
+                <CoverImage
+                  src={c.image}
+                  alt=""
+                  class="aspect-[16/9]"
+                  width={480}
+                  height={270}
+                />
+              )
+            }
 
-            <h3 class="relative text-[23px] text-forest-900">{c.name}</h3>
-            <p class="relative mt-2 flex-1 text-[15px] leading-relaxed text-graphite">
-              {c.blurb}
-            </p>
-            <span class="relative mt-6 inline-flex items-center gap-1.5 text-[14px] font-medium text-gold-600">
-              {c.count} {t(lang, 'productsCount')}
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="transition-transform group-hover:translate-x-0.5">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </span>
+            <div class="relative flex flex-1 flex-col p-7">
+              {
+                !c.image && (
+                  <span
+                    class="pointer-events-none absolute -top-14 -right-14 h-32 w-32 rounded-full bg-gold-50 opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-hidden="true"
+                  />
+                )
+              }
+
+              <h3 class="relative text-[23px] text-forest-900">{c.name}</h3>
+              <p class="relative mt-2 flex-1 text-[15px] leading-relaxed text-graphite">
+                {c.blurb}
+              </p>
+              <span class="relative mt-6 inline-flex items-center gap-1.5 text-[14px] font-medium text-gold-600">
+                {c.count} {t(lang, 'productsCount')}
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="transition-transform group-hover:translate-x-0.5">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </div>
           </a>
         ))
       }
