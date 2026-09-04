@@ -13,7 +13,7 @@
  *
  * Nis vetë para çdo build-i.
  */
-import { categorySchema, productSchema, postSchema } from '../src/lib/schema.ts';
+import { categorySchema, productSchema, postSchema } from '../src/lib/schema.mjs';
 
 let deshtime = 0;
 const rresht = () => console.log('');

@@ -1,7 +1,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { PRODUCT_PLACEHOLDER, PRICE_INVALID } from './schema';
+import { PRODUCT_PLACEHOLDER, PRICE_INVALID } from './schema.mjs';
 
 export type Lang = 'sq' | 'en';
 

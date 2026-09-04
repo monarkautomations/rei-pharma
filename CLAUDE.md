@@ -170,6 +170,38 @@ Kufizim me vetëdije: emrat e produkteve priten në dy rreshta te kartat
 (`line-clamp-2`). Pa këtë, një emër i gjatë e bënte kartën 527px kundrejt
 320px të fqinjës. Emri i plotë del te faqja e produktit.
 
+## Publikimi — mos u mbështet te lidhja GitHub→Netlify
+
+Më 4 shtator klienti shtoi dy produkte nga CMS-ja. Përmbajtja ishte e rregullt:
+build-i i saj kalonte lokalisht, fotot përpunoheshin. Netlify nuk nisi asnjë
+ndërtim për 70 minuta. Sapo u shtyva një commit nga terminali, e njëjta
+përmbajtje doli online për 30 sekonda.
+
+Provuar veç e veç, që të mos ngatërrohen shkaqet:
+
+- build-i me përmbajtjen e klientit → kalon, 53 faqe
+- `sharp` mbi fotot e tij të papërpunuara → i përpunon pa gabim
+- shtytje nga terminali → deploy brenda 30 sekondash
+
+Pra ndërtimi nuk ishte problemi. Commit-et që Sveltia CMS bën përmes GitHub
+API-t nuk e nisnin dot publikimin.
+
+`.github/workflows/publiko-ndryshimet.yml` e zgjidh pa u varur nga ajo lidhje:
+çdo 10 minuta krahason `main` me etiketën `i-publikuar` dhe, po pati ndryshim,
+e nis vetë ndërtimin me një build hook. Etiketa lëviz vetëm pasi Netlify e
+pranon kërkesën, që një dështim të riprovohet vetvetiu.
+
+**Kërkon një secret:** `NETLIFY_BUILD_HOOK`. Udhëzimet janë në krye të vetë
+workflow-it.
+
+### Skemat rrinë te `.mjs`, jo `.ts` — me qëllim
+
+`src/lib/schema.mjs` e lexon edhe `scripts/test-schema.mjs`, që nis para
+`astro build`, pra edhe Node-i i thjeshtë te Netlify. Si `.ts`, importi varej
+nga leximi vetiu i TypeScript-it — veçori që Node-i e ka vetëm nga 22.18 e
+tutje, dhe versionin atje e zgjedh Netlify, jo ne. **Mos e kthe në `.ts`.**
+Tipat nuk humbasin: Zod-i i nxjerr vetë.
+
 ## Gjendja aktuale
 
 Të mbaruara, në të dyja gjuhët: kryefaqja, produktet, kategoritë, faqja e

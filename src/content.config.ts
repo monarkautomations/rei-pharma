@@ -1,8 +1,8 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
-import { categorySchema, productSchema, postSchema } from './lib/schema';
+import { categorySchema, productSchema, postSchema } from './lib/schema.mjs';
 
-// Skemat rrinë te `src/lib/schema.ts` që `scripts/test-schema.mjs` t'i provojë
+// Skemat rrinë te `src/lib/schema.mjs` që `scripts/test-schema.mjs` t'i provojë
 // kundrejt asaj që shkruan vërtet CMS-ja. Mos i zhvendos këtu prapa.
 
 // Kategoritë janë koleksion, jo kod. Klienti do t'i shtojë e fshijë vetë nga CMS-ja.

@@ -112,7 +112,7 @@ export function formatPrice(lek: number) {
  * shkruar veç-e-veç, mjaftonte një gabim shkrimi që një kartë të dilte
  * ndryshe nga të tjerat.
  *
- * Burimi është `src/lib/schema.ts`, sepse atë file e lexon edhe testi i
+ * Burimi është `src/lib/schema.mjs`, sepse atë file e lexon edhe testi i
  * skemës, i cili nuk mund të importojë nga këtu pa tërhequr Astro-n.
  */
-export { PRODUCT_PLACEHOLDER } from '../lib/schema';
+export { PRODUCT_PLACEHOLDER } from '../lib/schema.mjs';

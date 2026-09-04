@@ -12,6 +12,13 @@
  * pastaj nëse hyrja mund të shfaqet apo duhet lënë jashtë. Faqja del gjithmonë.
  *
  * Provohet nga `scripts/test-schema.mjs`, që nis para çdo build-i.
+ *
+ * Shkruar me JavaScript, jo TypeScript, me qëllim: këtë file e lexon edhe
+ * testi që nis para `astro build`, pra edhe Node-i i thjeshtë te Netlify.
+ * Si `.ts`, importi varej nga leximi vetiu i TypeScript-it, veçori që Node-i
+ * e ka vetëm nga versioni 22.18 e tutje — dhe versionin atje e zgjedh Netlify,
+ * jo ne. Një rikthim i tyre te Node 20 do ta ndalte çdo publikim. Tipat nuk
+ * humbasin: Zod-i i nxjerr vetë nga skemat.
  */
 import { z } from 'zod';
 
@@ -24,16 +31,16 @@ export const PRICE_INVALID = 0;
  * Sveltia CMS nuk e heq fushën kur klienti e lë bosh: shkruan `null` te
  * numrat dhe datat, `""` te tekstet dhe te fotot. Të dyja do të thonë "bosh".
  */
-const boshEshteMungese = (v: unknown) => (v === null || v === '' ? undefined : v);
+const boshEshteMungese = (v) => (v === null || v === '' ? undefined : v);
 
 /** Opsionale, e duron `null` dhe `""`, dhe s'bie kurrë. */
-function cmsOptional<T extends z.ZodTypeAny>(schema: T) {
+function cmsOptional(schema) {
   return z.preprocess(boshEshteMungese, schema.optional().catch(undefined));
 }
 
 /** Me vlerë të parazgjedhur, e duron çdo plehrë, dhe s'bie kurrë. */
-function cmsDefault<T extends z.ZodTypeAny>(schema: T, fallback: z.infer<T>) {
-  return z.preprocess(boshEshteMungese, schema.default(fallback as never)).catch(fallback);
+function cmsDefault(schema, fallback) {
+  return z.preprocess(boshEshteMungese, schema.default(fallback)).catch(fallback);
 }
 
 /** Tekst i detyrueshëm që megjithatë s'guxon ta ndalë build-in. */
@@ -47,7 +54,7 @@ const cmsText = cmsDefault(z.string(), '');
  * bëhet `PRICE_INVALID`, dhe produkti nuk shfaqet fare — më mirë pa produkt
  * sesa me çmim të rremë.
  */
-const numri = (v: unknown): number => {
+const numri = (v) => {
   if (typeof v === 'number' && Number.isFinite(v)) return Math.round(v);
   if (typeof v === 'string') {
     const shifrat = v.replace(/[^\d.,-]/g, '').replace(/[.,](?=\d{3}\b)/g, '').replace(',', '.');
@@ -70,7 +77,7 @@ const cmsOptionalPrice = z.preprocess((v) => {
 }, z.number().int().positive().optional().catch(undefined));
 
 /** Po/jo nga çdo formë që mund të marrë ("true", "po", 1). */
-const cmsBoolean = (fallback: boolean) =>
+const cmsBoolean = (fallback) =>
   z.preprocess((v) => {
     if (typeof v === 'boolean') return v;
     if (typeof v === 'string') {
