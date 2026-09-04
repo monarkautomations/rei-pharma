@@ -1,6 +1,6 @@
 ---
-name_sq: Magnes active— 60 kapsula
-name_en: Magnes active— 60 capsules
+name_sq: Magnes active— 30 Bustina
+name_en: Magnes active— 30 Sachets
 price: 1260
 oldPrice: null
 category: vitamina-suplemente
