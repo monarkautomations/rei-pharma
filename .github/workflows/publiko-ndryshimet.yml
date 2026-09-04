@@ -2,20 +2,30 @@
 #
 # Pse ekziston: më 4 shtator klienti shtoi dy produkte nga CMS-ja. Përmbajtja
 # ishte krejt e rregullt — build-i i saj kalon, fotot përpunohen — por Netlify
-# nuk nisi asnjë ndërtim për 70 minuta. Sapo shtyva unë një commit, i njëjti
-# përmbajtje doli online për 30 sekonda. Pra ndërtimi nuk ishte problemi:
-# commit-et që CMS-ja bën përmes GitHub API-t nuk e nisnin dot publikimin.
+# nuk nisi asnjë ndërtim për 70 minuta. Sapo u shtyva një commit nga terminali,
+# e njëjta përmbajtje doli online për 30 sekonda. Pra commit-et që Sveltia CMS
+# bën përmes GitHub API-t nuk e nisnin dot publikimin.
 #
-# Kjo orë nuk varet nga ajo lidhje. Çdo 10 minuta shikon nëse `main` ka
-# ndryshuar që nga publikimi i fundit dhe, po pati, e nis vetë ndërtimin.
-# Klienti nuk ka pse të presë e as të shkruajë askund.
+# Kjo nis ndërtimin vetë, pa u varur nga lidhja GitHub→Netlify:
+#
+#   push      — menjëherë, nëse GitHub-i e nxjerr ngjarjen për commit-et e CMS-së
+#   schedule  — çdo dy orë, si rrjetë sigurie nëse `push` nuk vjen
+#
+# Dy shkaqe, jo një, sepse ende nuk dihet nëse `push` vjen për commit-et që
+# bëhen përmes API-t. Nëse vjen, publikimi është i menjëhershëm dhe kroni nuk
+# gjen kurrë punë. Nëse nuk vjen, kroni e kap brenda dy orësh. Vetë historiku
+# i nisjeve te skeda "Actions" e tregon cili nga të dy po punon.
+#
+# Kroni mbahet i rrallë me qëllim: repo-ja është private dhe GitHub-i jep 2000
+# minuta falas në muaj, ndërsa çdo nisje faturohet së paku një minutë. Një kron
+# çdo 10 minuta do të hante ~4300 minuta.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # NDIHMOJE NJËHERË, PASTAJ HARROJE (2 minuta, bëhet vetëm një herë):
 #
 #   1. Netlify → Site configuration → Build & deploy → Build hooks
-#      → "Add build hook", vëri emrin "GitHub cron", dega "main" → Save.
-#      Do të të japë një adresë që fillon me https://api.netlify.com/build_hooks/
+#      → "Add build hook", emri "GitHub", dega "main" → Save.
+#      Të jep një adresë që fillon me https://api.netlify.com/build_hooks/
 #
 #   2. GitHub → repo-ja → Settings → Secrets and variables → Actions
 #      → "New repository secret"
@@ -29,13 +39,15 @@
 name: Publiko ndryshimet e CMS-së
 
 on:
+  push:
+    branches: [main]
+    # Etiketa `i-publikuar` lëviz nga vetë ky workflow; pa këtë do të nisej
+    # përsëri nga puna e vet.
+    tags-ignore: ['**']
   schedule:
-    # Çdo 10 minuta. GitHub-i mund ta vonojë disa minuta kur është i ngarkuar.
-    - cron: '*/10 * * * *'
-  # Që ta nisësh me dorë nga skeda "Actions" kur të duash.
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
-# Nevojitet vetëm për të lëvizur etiketën që mban shenjën e publikimit të fundit.
 permissions:
   contents: write
 
@@ -45,60 +57,85 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  kontrollo:
+  publiko:
     runs-on: ubuntu-latest
     steps:
-      - name: Merr repo-në me etiketat
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
+      # Pa `checkout`: gjithçka lexohet me API. Nisja zgjat sekonda, jo minuta,
+      # dhe repo-ja me fotot brenda nuk shkarkohet fare.
       - name: A ka ndryshuar `main` që nga publikimi i fundit?
         id: kontrolli
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
-          # Etiketa `i-publikuar` mban commit-in e fundit që e kemi dërguar për
-          # ndërtim. Pa të (hera e parë), trajtohet si ndryshim.
-          I_FUNDIT=$(git rev-parse --verify --quiet refs/tags/i-publikuar || echo "")
-          TANI=$(git rev-parse HEAD)
+          set -euo pipefail
 
-          echo "commit-i tani     : $TANI"
+          TANI=$(gh api "repos/$REPO/commits/main" --jq .sha)
+          I_FUNDIT=$(gh api "repos/$REPO/git/ref/tags/i-publikuar" --jq .object.sha 2>/dev/null || echo "")
+
+          echo "commit-i tani      : $TANI"
           echo "i publikuar më parë: ${I_FUNDIT:-(asnjë)}"
 
           if [ "$I_FUNDIT" = "$TANI" ]; then
             echo "ndrysho=jo" >> "$GITHUB_OUTPUT"
-            echo "Asgjë e re. Nuk nisim ndërtim."
+            echo "Asgjë e re. Nuk nisim ndërtim." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "ndrysho=po" >> "$GITHUB_OUTPUT"
             echo "sha=$TANI" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Nis ndërtimin te Netlify
+        id: nisja
         if: steps.kontrolli.outputs.ndrysho == 'po'
         env:
           HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
         run: |
-          if [ -z "$HOOK" ]; then
-            echo "::warning::Mungon secret-i NETLIFY_BUILD_HOOK."
-            echo "Shih udhëzimet në krye të këtij file. Pa të, publikimi mbetet"
-            echo "i varur nga lidhja GitHub→Netlify, e cila ka dështuar më parë."
-            exit 1
+          set -uo pipefail
+
+          if [ -z "${HOOK:-}" ]; then
+            # Me qëllim nuk dështon: kroni nis shpesh, dhe një dështim i
+            # përsëritur do të mbushte postën me njoftime. Paralajmërimi mbetet
+            # i dukshëm te përmbledhja e nisjes.
+            {
+              echo "## Mungon secret-i NETLIFY_BUILD_HOOK"
+              echo ""
+              echo "Publikimi automatik nuk është aktiv ende. Deri sa të vihet,"
+              echo "ndryshimet e klientit nga CMS-ja mund të mos dalin online."
+              echo ""
+              echo "Udhëzimet janë në krye të .github/workflows/publiko-ndryshimet.yml"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Mungon NETLIFY_BUILD_HOOK — publikimi automatik joaktiv."
+            echo "u_nis=jo" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          KODI=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -d '{}' "$HOOK")
+          KODI=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -d '{}' "$HOOK" || echo "000")
           echo "Netlify u përgjigj me: $KODI"
 
-          # 2xx do të thotë që ndërtimi u vu në radhë.
           case "$KODI" in
-            2*) echo "Ndërtimi u nis." ;;
-            *)  echo "::error::Netlify nuk e pranoi kërkesën (kodi $KODI)."
-                echo "Etiketa nuk lëviz, që provohet sërish pas 10 minutash."
-                exit 1 ;;
+            2*)
+              echo "u_nis=po" >> "$GITHUB_OUTPUT"
+              echo "Ndërtimi u nis për ${{ steps.kontrolli.outputs.sha }}" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "::error::Netlify nuk e pranoi kërkesën (kodi $KODI)."
+              echo "u_nis=jo" >> "$GITHUB_OUTPUT"
+              exit 1
+              ;;
           esac
 
+      # Etiketa lëviz vetëm pasi Netlify e pranoi. Nëse hapi i mësipërm dështoi
+      # ose secret-i mungon, ajo mbetet aty ku ishte dhe nisja tjetër riprovon.
       - name: Shëno commit-in si të publikuar
-        if: steps.kontrolli.outputs.ndrysho == 'po'
+        if: steps.nisja.outputs.u_nis == 'po'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ steps.kontrolli.outputs.sha }}
         run: |
-          # Lëviz etiketën vetëm pasi Netlify e pranoi. Nëse hapi i mësipërm
-          # dështon, etiketa mbetet aty ku ishte dhe nisja e ardhshme riprovon.
-          git tag -f i-publikuar "${{ steps.kontrolli.outputs.sha }}"
-          git push -f origin refs/tags/i-publikuar
+          set -uo pipefail
+          gh api -X PATCH "repos/$REPO/git/refs/tags/i-publikuar" \
+            -f sha="$SHA" -F force=true >/dev/null 2>&1 \
+          || gh api -X POST "repos/$REPO/git/refs" \
+            -f ref=refs/tags/i-publikuar -f sha="$SHA" >/dev/null
+          echo "Etiketa `i-publikuar` u vendos te $SHA"

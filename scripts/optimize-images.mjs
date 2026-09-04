@@ -74,6 +74,10 @@ const kb = (bytes) => `${(bytes / 1024).toFixed(0)} KB`;
 // t'i rikompresonte fotot nga e para.
 const key = (path) => path.split(sep).join('/');
 
+// Shkruar si konstante sepse ky file kalon nëpër skripte që i përpunojnë
+// sekuencat me kundërpjerrëse.
+const NEWLINE = String.fromCharCode(10);
+
 let cache = {};
 if (existsSync(CACHE)) {
   try {
@@ -113,6 +117,7 @@ async function trimIsSafe(buffer) {
 let processed = 0;
 let skipped = 0;
 let savedBytes = 0;
+let deshtuan = 0;
 
 for (const folder of FOLDERS) {
   if (!existsSync(folder)) {
@@ -127,62 +132,79 @@ for (const folder of FOLDERS) {
     if (!['.jpg', '.jpeg', '.png'].includes(ext)) continue;
 
     const path = join(folder, file);
-    const original = await readFile(path);
-    const before = original.length;
-    const currentHash = hash(original);
 
-    // E kemi nxjerrë ne këtë file dhe s'ka ndryshuar që atëherë.
-    if (cache[key(path)] === currentHash) {
-      skipped++;
-      continue;
+    // Asnjë foto e vetme nuk guxon ta ndalë build-in.
+    //
+    // Këtu vjen çdo gjë që ngarkon klienti: file i cunguar nga interneti i
+    // dobët, `.jpg` që në të vërtetë është HEIC, foto e madhe sa kujtesa e
+    // ndërtuesit. Pa këtë, njëra prej tyre do ta rrëzonte `npm run build` dhe
+    // asgjë nuk do të publikohej — as produktet e tjera, as puna e mëparshme.
+    // Fotoja e prishur mbetet siç është; nëse s'ekziston fare, `catalog.ts`
+    // vë vizatimin e përkohshëm në vend të një fotoje të thyer.
+    try {
+      const original = await readFile(path);
+      const before = original.length;
+      const currentHash = hash(original);
+
+      // E kemi nxjerrë ne këtë file dhe s'ka ndryshuar që atëherë.
+      if (cache[key(path)] === currentHash) {
+        skipped++;
+        continue;
+      }
+
+      const meta = await sharp(original).metadata();
+
+      // Pas rrotullimit sipas EXIF-it, gjerësia dhe lartësia ndërrojnë vend.
+      const sideways = (meta.orientation ?? 1) >= 5;
+      const srcWidth = sideways ? meta.height : meta.width;
+
+      let pipeline = sharp(original).rotate(); // rrotullim sipas EXIF
+
+      const trimmed = TRIM_FOLDERS.includes(folder) && (await trimIsSafe(original));
+      if (trimmed) {
+        pipeline = pipeline.trim({ threshold: TRIM_THRESHOLD });
+      }
+
+      if (srcWidth && srcWidth > MAX_WIDTH) {
+        pipeline = pipeline.resize({ width: MAX_WIDTH, withoutEnlargement: true });
+      }
+
+      // sharp e heq EXIF-in si parazgjedhje — mos shto `.withMetadata()`.
+      const output =
+        ext === '.png'
+          ? await pipeline.png({ compressionLevel: 9, palette: true }).toBuffer()
+          : await pipeline
+              .jpeg({ quality: JPEG_QUALITY, progressive: true, mozjpeg: true })
+              .toBuffer();
+
+      // Nëse "optimizimi" e rëndon file-in, mbaje origjinalin. Prerja bën
+      // përjashtim: ajo ndryshon pamjen, jo peshën, prandaj ruhet gjithsesi.
+      if (!trimmed && output.length >= before && (!srcWidth || srcWidth <= MAX_WIDTH)) {
+        cache[key(path)] = currentHash;
+        skipped++;
+        continue;
+      }
+
+      await writeFile(path, output);
+      cache[key(path)] = hash(output);
+      processed++;
+      savedBytes += before - output.length;
+
+      const notes = [
+        trimmed ? 'u pre sfondi' : null,
+        srcWidth > MAX_WIDTH ? `${srcWidth}px → ${MAX_WIDTH}px` : null,
+      ].filter(Boolean);
+
+      console.log(
+        `  ${key(path)}  ${kb(before)} → ${kb(output.length)}` +
+          (notes.length ? `  (${notes.join(', ')})` : ''),
+      );
+    } catch (err) {
+      deshtuan++;
+      const arsyeja = String(err?.message ?? err).split(NEWLINE)[0];
+      console.warn(`  ${key(path)}  NUK U PËRPUNUA: ${arsyeja}`);
+      console.warn('    Fotoja mbetet siç është. Build-i vazhdon.');
     }
-
-    const meta = await sharp(original).metadata();
-
-    // Pas rrotullimit sipas EXIF-it, gjerësia dhe lartësia ndërrojnë vend.
-    const sideways = (meta.orientation ?? 1) >= 5;
-    const srcWidth = sideways ? meta.height : meta.width;
-    const srcHeight = sideways ? meta.width : meta.height;
-
-    let pipeline = sharp(original).rotate(); // rrotullim sipas EXIF
-
-    const trimmed = TRIM_FOLDERS.includes(folder) && (await trimIsSafe(original));
-    if (trimmed) {
-      pipeline = pipeline.trim({ threshold: TRIM_THRESHOLD });
-    }
-
-    if (srcWidth && srcWidth > MAX_WIDTH) {
-      pipeline = pipeline.resize({ width: MAX_WIDTH, withoutEnlargement: true });
-    }
-
-    // sharp e heq EXIF-in si parazgjedhje — mos shto `.withMetadata()`.
-    const output =
-      ext === '.png'
-        ? await pipeline.png({ compressionLevel: 9, palette: true }).toBuffer()
-        : await pipeline.jpeg({ quality: JPEG_QUALITY, progressive: true, mozjpeg: true }).toBuffer();
-
-    // Nëse "optimizimi" e rëndon file-in, mbaje origjinalin. Prerja bën
-    // përjashtim: ajo ndryshon pamjen, jo peshën, prandaj ruhet gjithsesi.
-    if (!trimmed && output.length >= before && (!srcWidth || srcWidth <= MAX_WIDTH)) {
-      cache[key(path)] = currentHash;
-      skipped++;
-      continue;
-    }
-
-    await writeFile(path, output);
-    cache[key(path)] = hash(output);
-    processed++;
-    savedBytes += before - output.length;
-
-    const notes = [
-      trimmed ? 'u pre sfondi' : null,
-      srcWidth > MAX_WIDTH ? `${srcWidth}px → ${MAX_WIDTH}px` : null,
-    ].filter(Boolean);
-
-    console.log(
-      `  ${key(path)}  ${kb(before)} → ${kb(output.length)}` +
-        (notes.length ? `  (${notes.join(', ')})` : ''),
-    );
   }
 }
 
@@ -193,7 +215,11 @@ for (const stored of Object.keys(cache)) {
   if (stored !== '__pipeline' && !existsSync(stored)) delete cache[stored];
 }
 
-await writeFile(CACHE, JSON.stringify(cache, null, 2) + '\n');
+await writeFile(CACHE, JSON.stringify(cache, null, 2) + NEWLINE);
+
+if (deshtuan > 0) {
+  console.warn(`Fotot: ${deshtuan} nuk u përpunuan dot (shih më lart).`);
+}
 
 if (processed === 0) {
   console.log(`Fotot: asnjë e re. ${skipped} tashmë të optimizuara.`);
