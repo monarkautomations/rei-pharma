@@ -190,38 +190,38 @@ Kufizim me vetëdije: emrat e produkteve priten në dy rreshta te kartat
 (`line-clamp-2`). Pa këtë, një emër i gjatë e bënte kartën 527px kundrejt
 320px të fqinjës. Emri i plotë del te faqja e produktit.
 
-## Publikimi — mos u mbështet te lidhja GitHub→Netlify
+## Publikimi — pse repo-ja është publike
 
-Më 4 shtator klienti shtoi dy produkte nga CMS-ja. Përmbajtja ishte e rregullt:
-build-i i saj kalonte lokalisht, fotot përpunoheshin. Netlify nuk nisi asnjë
-ndërtim për 70 minuta. Sapo u shtyva një commit nga terminali, e njëjta
-përmbajtje doli online për 30 sekonda.
+Repo-ja duhet të mbetet **publike**. Nuk është zgjedhje stili.
 
-Provuar veç e veç, që të mos ngatërrohen shkaqet:
+Netlify, në planin falas, lejon **një kontribues të vetëm** të nisë ndërtime nga
+një repo privat. Pronari është ai i vetmi. Klienti, që shkruan nga CMS-ja me
+llogarinë e vet GitHub, është i dyti — ndaj çdo commit i tij bllokohej para se
+build-i të niste:
 
-- build-i me përmbajtjen e klientit → kalon, 53 faqe
-- `sharp` mbi fotot e tij të papërpunuara → i përpunon pa gabim
-- shtytje nga terminali → deploy brenda 30 sekondash
+    Build blocked: This commit is from an unrecognized Git contributor.
 
-Pra ndërtimi nuk ishte problemi. Commit-et që Sveltia CMS bën përmes GitHub
-API-t nuk e nisnin dot publikimin.
+Pasoja ishte mizore për t'u kuptuar: klienti shtypte Save, CMS-ja i thoshte se
+u ruajt, commit-i mbërrinte te GitHub-i — dhe site-i nuk lëvizte. Asnjë shenjë
+askund, veçse te faqja "Deploys" e Netlify-t, ku askush s'shikonte. Repo-t
+publike nuk kanë kufi kontribuesish, dhe kjo e zgjidhi.
 
-`.github/workflows/publiko-ndryshimet.yml` e zgjidh pa u varur nga ajo lidhje:
-çdo 10 minuta krahason `main` me etiketën `i-publikuar` dhe, po pati ndryshim,
-e nis vetë ndërtimin me një build hook. Etiketa lëviz vetëm pasi Netlify e
-pranon kërkesën, që një dështim të riprovohet vetvetiu.
+**Nëse ndonjëherë repo-ja kthehet private, publikimi i klientit ndalet sërish.**
+Atëherë duhet ose Netlify Pro, ose ndërtimi te GitHub Actions me dërgim të
+file-ave të gatshëm te Netlify (kontrolli i kontribuesve vlen vetëm për
+ndërtimet që Netlify i bën vetë nga Git-i).
 
-**Secret-i `NETLIFY_BUILD_HOOK` është vendosur** (4 shtator 2026) dhe u provua:
-nisja #2 e nisi ndërtimin dhe etiketa `i-publikuar` u vendos te `b56acc3`.
-Etiketa lëviz vetëm pasi Netlify përgjigjet me 2xx, pra vetë ekzistenca e saj
-është dëshmi se zinxhiri punon. Udhëzimet, po iku ndonjëherë, janë në krye të
-vetë workflow-it.
+### Një diagnozë e gabuar, e mbajtur këtu me qëllim
 
-Dihet gjithashtu se GitHub-i **e nxjerr `push` për shtytjet e zakonshme** —
-nisja #1 u aktivizua kështu. Ende nuk dihet nëse e nxjerr edhe për commit-et
-që Sveltia CMS bën përmes API-t; kjo shihet te skeda "Actions" herën tjetër që
-klienti shton diçka. Në të dyja rastet publikimi ndodh: me `push` për sekonda,
-ose me kron brenda dy orësh.
+Fillimisht u konkludua se "commit-et që CMS-ja bën përmes API-t nuk e nisin dot
+publikimin", dhe u ndërtua një workflow që i niste ndërtimet me build hook. Ishte
+gabim: ato e nisnin ndërtimin çdo herë — Netlify i bllokonte menjëherë. Dëshmia
+e kohës (shtytja e pronarit punonte, e klientit jo) përputhej me të dyja
+shpjegimet, dhe u zgjodh i gabuari.
+
+Mësimi: kur dy shpjegime përputhen me të njëjtat fakte, shko te burimi që i
+ndan — këtu faqja "Deploys" e Netlify-t — në vend që të ndërtosh mbi hamendje.
+Workflow-i u hoq pasi u gjet shkaku i vërtetë.
 
 ### Skemat rrinë te `.mjs`, jo `.ts` — me qëllim
 
