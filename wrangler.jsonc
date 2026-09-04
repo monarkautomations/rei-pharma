@@ -1,0 +1,25 @@
+// Konfigurimi i hostimit te Cloudflare.
+//
+// Site-i ndodhet te Cloudflare sepse Netlify, në planin falas, i ndaloi
+// publikimet pasi u shpenzuan kreditet e ciklit. Shih CLAUDE.md.
+//
+// Ky është "Worker" vetëm me asete statike: nuk ka kod serveri, thjesht i
+// shërben file-at që nxjerr `astro build`. Prandaj nuk ka fushë `main`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rei-pharma",
+  "compatibility_date": "2026-09-05",
+
+  "assets": {
+    // Ajo që prodhon `npm run build`.
+    "directory": "./dist",
+
+    // Astro i ndërton faqet si `/produkt/x/index.html`. Kjo vlerë bën që
+    // `/produkt/x` dhe `/produkt/x/` të çojnë të dyja te faqja e duhur.
+    "html_handling": "auto-trailing-slash",
+
+    // Adresa që nuk përputhet me asgjë merr faqen tonë 404, jo një ekran bosh
+    // të Cloudflare-it. `dist/404.html` ekziston dhe mban `noindex`.
+    "not_found_handling": "404-page"
+  }
+}
