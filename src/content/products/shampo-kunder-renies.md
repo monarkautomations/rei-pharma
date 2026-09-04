@@ -1,11 +1,13 @@
 ---
-name_sq: "Shampo kundër rënies së flokëve"
-name_en: "Anti hair-loss shampoo"
-price: 2100
-category: "kujdesi-ndaj-flokeve"
-brand: "PLACEHOLDER"
-desc_sq: "Forcon rrënjën dhe qetëson skalpin. Për përdorim 3 herë në javë."
-desc_en: "Strengthens roots and soothes the scalp. Use three times a week."
+name_sq: Bioscalin TricoAGE 50+
+name_en: Bioscalin TricoAGE 50+
+price: 1560
+oldPrice: null
+category: kujdesi-ndaj-flokeve
+brand: PLACEHOLDER
+image: /foto/WhatsApp Image 2026-09-04 at 11.13.45 PM.jpeg
+desc_sq: Bioscalin TricoAGE 50+ është një shampo që përdoret për flokë të dobësuar, të hollë dhe pa volum, veçanërisht pas moshës 50 vjeç. Ndihmon në forcimin dhe ridensifikimin e flokut, duke i dhënë më shumë volum dhe shkëlqim. Gjithashtu përdoret si mbështetje në trajtimet kundër rënies së flokëve.
+desc_en: Bioscalin TricoAGE 50+ is a strengthening shampoo for thinning, weakened hair. It helps improve hair density, volume, and shine, while supporting anti-hair-loss treatments
 inStock: true
 featured: true
 order: 6
