@@ -191,8 +191,17 @@ API-t nuk e nisnin dot publikimin.
 e nis vetë ndërtimin me një build hook. Etiketa lëviz vetëm pasi Netlify e
 pranon kërkesën, që një dështim të riprovohet vetvetiu.
 
-**Kërkon një secret:** `NETLIFY_BUILD_HOOK`. Udhëzimet janë në krye të vetë
-workflow-it.
+**Secret-i `NETLIFY_BUILD_HOOK` është vendosur** (4 shtator 2026) dhe u provua:
+nisja #2 e nisi ndërtimin dhe etiketa `i-publikuar` u vendos te `b56acc3`.
+Etiketa lëviz vetëm pasi Netlify përgjigjet me 2xx, pra vetë ekzistenca e saj
+është dëshmi se zinxhiri punon. Udhëzimet, po iku ndonjëherë, janë në krye të
+vetë workflow-it.
+
+Dihet gjithashtu se GitHub-i **e nxjerr `push` për shtytjet e zakonshme** —
+nisja #1 u aktivizua kështu. Ende nuk dihet nëse e nxjerr edhe për commit-et
+që Sveltia CMS bën përmes API-t; kjo shihet te skeda "Actions" herën tjetër që
+klienti shton diçka. Në të dyja rastet publikimi ndodh: me `push` për sekonda,
+ose me kron brenda dy orësh.
 
 ### Skemat rrinë te `.mjs`, jo `.ts` — me qëllim
 
