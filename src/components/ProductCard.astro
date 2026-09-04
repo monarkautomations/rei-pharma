@@ -68,8 +68,15 @@ const schema = {
   zgjerohet mbi kartën me `after:absolute`. Butoni i shportës ngrihet mbi të me
   `relative z-10`, që klikimi mbi "Shto në shportë" të mos hapë faqen.
 */}
+{/*
+  `h-full` që karta të mbushë rreshtin e grid-it edhe kur është e mbështjellë.
+  Te kryefaqja çdo kartë rri brenda një `<div data-reveal>` për animacionin:
+  grid-i e zgjat atë div-in, po karta brenda merrte lartësinë e vet, dhe dy
+  kartat pranë e pranë dilnin të pabarabarta. Te /produktet nuk dukej, sepse
+  atje karta është fëmijë i drejtpërdrejtë i grid-it.
+*/}
 <article
-  class="group relative flex flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4"
+  class="group relative flex h-full flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4"
 >
   {/*
     Fotot e produkteve kanë sfond të bardhë. Mbi kornizë bezh ai sfond dilte

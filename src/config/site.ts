@@ -56,7 +56,8 @@ export const site = {
  */
 export const stats = [
   {
-    value: 12,
+    // 15, jo 12 — korrigjuar nga klienti më 5 shtator 2026.
+    value: 15,
     suffix: '+',
     label: { sq: 'Vite në shërbim të Tiranës', en: 'Years serving Tirana' },
   },

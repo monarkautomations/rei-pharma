@@ -30,8 +30,11 @@ const {
 const href = path(lang, 'post', slug);
 ---
 
+{/* `h-full` për të njëjtën arsye si te ProductCard: te kryefaqja karta rri
+    brenda një `<div data-reveal>`, dhe pa këtë tri kartat pranë e pranë dalin
+    me lartësi të ndryshme. */}
 <article
-  class="group relative flex flex-col overflow-hidden rounded-[14px] border border-mist bg-white transition-colors hover:border-gold-500"
+  class="group relative flex h-full flex-col overflow-hidden rounded-[14px] border border-mist bg-white transition-colors hover:border-gold-500"
 >
   <div class="relative">
     {
