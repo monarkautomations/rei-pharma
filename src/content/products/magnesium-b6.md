@@ -1,7 +1,7 @@
 ---
-name_sq: MAGNESIUM + B6
-name_en: MAGNESIUM + B6
-price: 3120
+name_sq: MAGNESIUM + B6 - 60 Kapsula
+name_en: MAGNESIUM + B6 - 60 Capsules
+price: 1248
 oldPrice: null
 category: vitamina-suplemente
 brand: ''
