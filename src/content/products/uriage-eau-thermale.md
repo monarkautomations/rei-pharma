@@ -1,6 +1,6 @@
 ---
-name_sq: URIAGE EAU THERMALE
-name_en: URIAGE EAU THERMALE
+name_sq: URIAGE EAU THERMALE ( Per Bebet )
+name_en: URIAGE EAU THERMALE ( For Babies )
 price: 1670
 oldPrice: null
 category: kujdesi-ndaj-bebes
