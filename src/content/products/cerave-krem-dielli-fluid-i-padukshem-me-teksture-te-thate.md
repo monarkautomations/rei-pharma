@@ -1,6 +1,6 @@
 ---
-name_sq: CeraVe ( Krem dielli fluid, i padukshëm me teksturë të thatë )
-name_en: CeraVe ( Invisible Dry Touch Fluid Sunscreen )
+name_sq: CeraVe ( Krem dielli fluid )
+name_en: CeraVe ( Fluid Sunscreen )
 price: 1500
 oldPrice: null
 category: kujdesi-ndaj-diellit
