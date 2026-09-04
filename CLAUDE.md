@@ -99,7 +99,7 @@ produkteve rikalohen njëherë, blogu jo, që të mos rikompresohet pa nevojë.
 
 `scripts/.image-cache.json` mban shenjën e asaj që ka nxjerrë vetë skripti, që
 e njëjta foto të mos rikompresohet në çdo build dhe të humbasë cilësi. Çelësat
-ruhen me `/`, jo me `\`, sepse Netlify ndërton në Linux.
+ruhen me `/`, jo me `\`, sepse ndërtimi bëhet në Linux.
 
 ### Dygjuhësia
 
@@ -190,79 +190,91 @@ Kufizim me vetëdije: emrat e produkteve priten në dy rreshta te kartat
 (`line-clamp-2`). Pa këtë, një emër i gjatë e bënte kartën 527px kundrejt
 320px të fqinjës. Emri i plotë del te faqja e produktit.
 
-## Publikimi — pse repo-ja është publike
+## Publikimi — Cloudflare, jo Netlify
 
-Repo-ja duhet të mbetet **publike**. Nuk është zgjedhje stili.
+Site-i hostohet te **Cloudflare Workers** (`wrangler.jsonc` te rrënja), dhe
+hyrja e CMS-së kalon nga një portier i veçantë te e njëjta llogari. Netlify nuk
+përdoret më për asgjë.
 
-Netlify, në planin falas, lejon **një kontribues të vetëm** të nisë ndërtime nga
-një repo privat. Pronari është ai i vetmi. Klienti, që shkruan nga CMS-ja me
-llogarinë e vet GitHub, është i dyti — ndaj çdo commit i tij bllokohej para se
-build-i të niste:
+    site-i        rei-pharma.reipharma.workers.dev
+    portieri      sveltia-cms-auth.reipharma.workers.dev
+    repo i tij    monarkautomations/sveltia-cms-auth
 
-    Build blocked: This commit is from an unrecognized Git contributor.
+Çdo `git push` në `main` ndërtohet dhe del online brenda ~1 minute.
 
-Pasoja ishte mizore për t'u kuptuar: klienti shtypte Save, CMS-ja i thoshte se
-u ruajt, commit-i mbërrinte te GitHub-i — dhe site-i nuk lëvizte. Asnjë shenjë
-askund, veçse te faqja "Deploys" e Netlify-t, ku askush s'shikonte. Repo-t
-publike nuk kanë kufi kontribuesish, dhe kjo e zgjidhi.
+### Pse u largua nga Netlify — dy pengesa, jo një
 
-**Nëse ndonjëherë repo-ja kthehet private, publikimi i klientit ndalet sërish.**
-Atëherë duhet ose Netlify Pro, ose ndërtimi te GitHub Actions me dërgim të
-file-ave të gatshëm te Netlify (kontrolli i kontribuesve vlen vetëm për
-ndërtimet që Netlify i bën vetë nga Git-i).
+**E para: një kontribues për repo private.** Klienti shkruan nga CMS-ja me
+llogarinë e vet GitHub, pra ishte kontribuesi i dytë, dhe çdo commit i tij
+bllokohej para se build-i të niste (`Build blocked: unrecognized Git
+contributor`). Repo-ja u bë publike dhe kjo u zgjidh.
+
+**E dyta: kreditet e ndërtimit.** Pak orë më vonë Netlify i ndaloi publikimet
+sepse u shpenzuan kreditet e ciklit — që rinovohej pas 27 ditësh. Site-i mbeti
+online, por asgjë e re nuk dilte. Kjo e mbylli çështjen: hostimi kaloi te
+Cloudflare, ku plani falas jep 500 ndërtime në muaj.
+
+`public/_redirects` punon njësoj te Cloudflare — i njëjti format.
+
+### Portieri i hyrjes
+
+`api.netlify.com/auth` u shërben vetëm sajteve të hostuara te Netlify. Sapo
+site-i kaloi te Cloudflare, hyrja filloi të kthente "Not Found". Zëvendësuesi
+është [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth).
+
+Konfigurimi i tij rri te **`wrangler.toml` i atij repo-je, jo te paneli**:
+`wrangler deploy` i merr variablat nga file-i, ndaj vlerat e vendosura vetëm te
+paneli fshihen te publikimi i ardhshëm — dhe hyrja do të prishej pa asnjë shkak
+të dukshëm. `GITHUB_CLIENT_SECRET` bën përjashtim: rri si Secret te paneli, ku
+wrangler nuk e prek.
+
+`ALLOWED_DOMAINS` përmban tashmë `reipharma.al` dhe `*.reipharma.al`, ndaj
+lidhja e domenit nuk kërkon asnjë ndryshim aty.
 
 ### Një diagnozë e gabuar, e mbajtur këtu me qëllim
 
-Fillimisht u konkludua se "commit-et që CMS-ja bën përmes API-t nuk e nisin dot
-publikimin", dhe u ndërtua një workflow që i niste ndërtimet me build hook. Ishte
-gabim: ato e nisnin ndërtimin çdo herë — Netlify i bllokonte menjëherë. Dëshmia
-e kohës (shtytja e pronarit punonte, e klientit jo) përputhej me të dyja
-shpjegimet, dhe u zgjodh i gabuari.
+Kur commit-et e klientit nuk dilnin online, u konkludua se "commit-et që CMS-ja
+bën përmes API-t nuk e nisin dot publikimin", dhe u ndërtua një workflow që i
+niste ndërtimet me build hook. Ishte gabim: ato e nisnin ndërtimin çdo herë —
+Netlify i bllokonte. Dëshmia (shtytja e pronarit punonte, e klientit jo)
+përputhej me të dyja shpjegimet, dhe u zgjodh i gabuari. Workflow-i u hoq.
 
 Mësimi: kur dy shpjegime përputhen me të njëjtat fakte, shko te burimi që i
-ndan — këtu faqja "Deploys" e Netlify-t — në vend që të ndërtosh mbi hamendje.
-
-Workflow-i u hoq pasi u gjet shkaku i vërtetë. Nuk duhet rikthyer: lidhja e
-vetë Netlify-t me GitHub-in punon, dhe të dyja bashkë do të nisnin dy ndërtime
-për çdo ndryshim — plani falas ka 300 minuta në muaj. Secret-i
-`NETLIFY_BUILD_HOOK` mbetet te GitHub Secrets, i padëmshëm; hiqe nëse do.
+ndan — atëherë faqja "Deploys" — në vend që të ndërtosh mbi hamendje.
 
 ### Kur diçka nuk del online
 
-Rendi i kontrollit, nga më i mundshmi:
-
-1. **Netlify → Deploys.** Aty duket çdo ndërtim me shkakun e dështimit. Ky
-   është burimi i vërtetë; gjithçka tjetër është hamendje.
+1. **Cloudflare → Workers & Pages → `rei-pharma` → Deployments.** Aty duket çdo
+   ndërtim me shkakun e dështimit. Ky është burimi i vërtetë.
 2. Site-i online nuk prishet nga një ndërtim i dështuar — mbetet versioni i
-   mëparshëm. Rreziku është që puna e klientit të mos dalë, jo që faqja të
-   thyhet.
-3. Nëse ndërtimi është i gjelbër por diçka mungon, kërko `[katalogu]` te log-u:
-   aty shkruhet me emër çdo hyrje që u korrigjua ose u la jashtë.
+   mëparshëm. Rreziku është që puna e klientit të mos dalë, jo që faqja të thyhet.
+3. Nëse ndërtimi është i gjelbër por diçka mungon, kërko `[katalogu]` te log-u.
 
 ### Skemat rrinë te `.mjs`, jo `.ts` — me qëllim
 
 `src/lib/schema.mjs` e lexon edhe `scripts/test-schema.mjs`, që nis para
-`astro build`, pra edhe Node-i i thjeshtë te Netlify. Si `.ts`, importi varej
+`astro build`, pra edhe Node-i i thjeshtë te hosti. Si `.ts`, importi varej
 nga leximi vetiu i TypeScript-it — veçori që Node-i e ka vetëm nga 22.18 e
-tutje, dhe versionin atje e zgjedh Netlify, jo ne. **Mos e kthe në `.ts`.**
+tutje, dhe versionin atje e zgjedh hosti, jo ne. **Mos e kthe në `.ts`.**
 Tipat nuk humbasin: Zod-i i nxjerr vetë.
 
 ## Gjendja aktuale
 
 Të mbaruara, në të dyja gjuhët: kryefaqja, produktet, kategoritë, faqja e
 produktit, blogu, kërkimi, kontakti, rreth nesh, privatësia, kushtet, 404,
-shporta me checkout WhatsApp. 43 faqe gjithsej.
+shporta me checkout WhatsApp.
 
-**Publikuar.** Repo në GitHub (`monarkautomations/rei-pharma`), lidhur me
-Netlify — çdo `git push` në `main` del online vetvetiu brenda ~1-2 minutash.
+**Publikuar.** Repo publik në GitHub (`monarkautomations/rei-pharma`), lidhur me
+Cloudflare — çdo `git push` në `main` del online brenda ~1 minute. Shih
+"Publikimi" më lart për arsyet.
 Sitemap real gjenerohet në build (`@astrojs/sitemap`, shih `astro.config.mjs`);
 `robots.txt` nuk gënjen më dhe bllokon `/admin/`.
 
-**CMS gati.** Sveltia CMS te `/admin` (file-t: `public/admin/index.html` dhe
-`public/admin/config.yml`). Backend GitHub përmes proxy-t OAuth të Netlify-t
-(`base_url: https://api.netlify.com`) — s'kërkon Netlify Identity, s'kërkon
-aplikacion OAuth të veçantë. Klienti hyn me llogari GitHub; për të shkruar,
-duhet të jetë bashkëpunëtor (collaborator) i ftuar te repo-ja.
+**CMS gati dhe në përdorim.** Sveltia CMS te `/admin` (file-t:
+`public/admin/index.html` dhe `public/admin/config.yml`). Backend GitHub përmes
+portierit tonë te Cloudflare — shih "Portieri i hyrjes" më lart. Klienti hyn me
+llogari GitHub; për të shkruar, duhet të jetë bashkëpunëtor (collaborator) i
+ftuar te repo-ja. Provuar: klienti punon vetë prej 4 shtatorit.
 
 Tri koleksionet përputhen fjalë për fjalë me `content.config.ts` — çdo ndryshim
 skeme atje kërkon të njëjtin ndryshim te `config.yml`, përndryshe CMS-ja do të
@@ -295,12 +307,14 @@ komandën — asnjë rresht kodi nuk ndryshon.
 `stats` te `site.ts` janë konfirmuar nga klienti. Nuk duhen rikonfirmuar.
 
 Mungon:
-- Produktet reale (të 7-tat janë placeholder, marka shkruan "PLACEHOLDER") —
-  klienti do t'i shtojë vetë nga CMS-ja kur ta ketë gati. Mos i shpik ti.
-- Fotot e produkteve (sot vizatimi gri). Fotot e blogut tashmë janë vendosur.
-- Domeni `reipharma.al` — sot site-i rri te adresa falas e Netlify-t.
-  `astro.config.mjs` dhe `site.ts` presin `reipharma.al`; kur domeni të lidhet
-  vërtet, kontrollo që s'ka mbetur gjë e koduar me adresën e vjetër Netlify.
+- **Domeni `reipharma.al`** — ende i pablerë. Sot site-i rri te adresa e gjatë
+  e Cloudflare-it. Lidhet te Cloudflare → `rei-pharma` → **Domains** →
+  *Add Domain*. `astro.config.mjs` dhe `site.ts` e presin tashmë atë domen, dhe
+  `ALLOWED_DOMAINS` i portierit e ka brenda — pra nuk duhet asnjë ndryshim kodi.
+- **Sajti i vjetër te Netlify** është ende online me përmbajtje të ngrirë të
+  4 shtatorit. Duhet fikur që të mos rrinë dy kopje të indeksueshme.
+- Disa produkte placeholder (marka shkruan "PLACEHOLDER") që klienti po i
+  zëvendëson një nga një. Mos i shpik ti.
 
 ## Konfirmuar me klientin
 
