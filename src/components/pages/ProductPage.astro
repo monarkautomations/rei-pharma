@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
 import AddToCart from '../AddToCart';
-import { site, formatPrice, waLink } from '../../config/site';
+import { site, formatPrice, waLink, PRODUCT_PLACEHOLDER } from '../../config/site';
 import type { Category, Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
 
@@ -18,7 +18,7 @@ const { lang, alternates, product, category, related } = Astro.props;
 
 const url = new URL(path(lang, 'product', product.slug), Astro.site).href;
 const hasRealBrand = Boolean(product.brand && product.brand !== 'PLACEHOLDER');
-const isPlaceholder = product.image === '/produkt-placeholder.svg';
+const isPlaceholder = product.image === PRODUCT_PLACEHOLDER;
 
 // Google dhe rrjetet sociale nuk e pranojnë SVG-në si foto produkti. Derisa
 // klienti të dërgojë fotot reale, përdoret vitrina e farmacisë.
@@ -122,19 +122,24 @@ const askMessage =
     </nav>
 
     <div class="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-14">
-      <div class="relative overflow-hidden rounded-[14px] bg-bone">
+      {/* Kornizë e bardhë te fotot reale — shih shënimin te ProductCard.astro. */}
+      <div
+        class:list={[
+          'relative overflow-hidden rounded-[14px]',
+          isPlaceholder ? 'bg-bone' : 'bg-white',
+        ]}
+      >
         <img
           src={product.image}
           alt={product.name}
           width="900"
-          height="1200"
+          height="900"
           fetchpriority="high"
           decoding="async"
           class:list={[
-            'aspect-square w-full lg:aspect-[3/4]',
-            // Asnjë foto nuk pritet — shih shënimin te ProductCard.astro.
-            'object-contain',
-            isPlaceholder ? 'p-10' : 'p-6',
+            // Kornizë katrore, foto e paprerë — shih shënimin te ProductCard.astro.
+            'aspect-square w-full object-contain',
+            isPlaceholder ? 'p-10' : 'p-8',
           ]}
         />
         {

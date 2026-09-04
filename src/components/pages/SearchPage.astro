@@ -83,6 +83,7 @@ const meta = {
 
 <script>
   import { searchProducts, type SearchItem } from '../../lib/search';
+  import { PRODUCT_PLACEHOLDER } from '../../config/site';
 
   const page = document.querySelector<HTMLElement>('[data-search-page]');
   const box = page?.querySelector<HTMLElement>('[data-results]');
@@ -138,11 +139,12 @@ const meta = {
     function card(item: SearchItem) {
       const name = lang === 'en' ? item.en : item.sq;
       const category = lang === 'en' ? item.caten : item.cat;
+      const bosh = item.image === PRODUCT_PLACEHOLDER;
       return `
         <article class="group relative flex flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4">
-          <div class="overflow-hidden rounded-md bg-bone">
-            <img src="${item.image}" alt="${escapeHtml(name)}" width="600" height="800" loading="lazy"
-                 class="aspect-[3/4] w-full object-contain p-6" />
+          <div class="overflow-hidden rounded-md ${bosh ? 'bg-bone' : 'bg-white'}">
+            <img src="${item.image}" alt="${escapeHtml(name)}" width="600" height="600" loading="lazy"
+                 class="aspect-square w-full object-contain ${bosh ? 'p-6' : 'p-3'}" />
           </div>
           <h3 class="mt-3 font-sans text-[15px] leading-snug">
             <a href="${productBase}${item.slug}" class="after:absolute after:inset-0 group-hover:text-gold-600">

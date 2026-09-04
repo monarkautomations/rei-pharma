@@ -1,6 +1,6 @@
 ---
 import AddToCart from './AddToCart';
-import { formatPrice } from '../config/site';
+import { formatPrice, PRODUCT_PLACEHOLDER } from '../config/site';
 import { path, t, type Lang } from '../lib/i18n';
 
 interface Props {
@@ -31,11 +31,17 @@ const {
 } = Astro.props;
 
 const href = path(lang, 'product', id);
-// Asnjë foto produkti nuk pritet: klienti ngarkon nga CMS-ja çfarë forme të
-// ketë, dhe `object-cover` i hante deri në gjysmën (provuar: një foto 1255x848
-// humbte 49% të gjerësisë brenda kutisë 3/4). Vetëm hapësira ndryshon —
-// placeholder-i merr më shumë, që vizatimi gri të mos duket i mbushur.
-const isPlaceholder = image === '/produkt-placeholder.svg';
+// Korniza është katrore dhe fotoja nuk pritet kurrë. Të dyja bashkë e bëjnë
+// produktin ta mbushë kartën pavarësisht formës së fotos: kutitë e gjera
+// mbushin gjerësinë, shishet e gjata lartësinë.
+//
+// `object-cover` nuk vjen në punë — hante deri në gjysmën e fotos (provuar:
+// një foto 1255x848 humbte 49% të gjerësisë). Bardhësia bosh që linte
+// `object-contain` hiqet një hap më parë, te `scripts/optimize-images.mjs`.
+//
+// Vetëm hapësira ndryshon: placeholder-i merr më shumë, që vizatimi gri të
+// mos duket i mbushur.
+const isPlaceholder = image === PRODUCT_PLACEHOLDER;
 
 const schema = {
   '@context': 'https://schema.org',
@@ -65,18 +71,31 @@ const schema = {
 <article
   class="group relative flex flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4"
 >
-  <div class="relative overflow-hidden rounded-md bg-bone">
+  {/*
+    Fotot e produkteve kanë sfond të bardhë. Mbi kornizë bezh ai sfond dilte
+    si katror i bardhë brenda një kutie, pra vetë fotoja dukej e ngjitur mbi
+    kartë. E bardha i shkrin të dyja në një.
+
+    Placeholder-i e mban bezhin: vizatimi gri mbi të bardhë do të notonte pa
+    asnjë kufi dhe karta do të dukej e zbrazët.
+  */}
+  <div
+    class:list={[
+      'relative overflow-hidden rounded-md',
+      isPlaceholder ? 'bg-bone' : 'bg-white',
+    ]}
+  >
     <img
       src={image}
       alt={name}
       width="600"
-      height="800"
+      height="600"
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       class:list={[
-        'aspect-[3/4] w-full transition-transform duration-300 group-hover:scale-[1.03]',
+        'aspect-square w-full transition-transform duration-300 group-hover:scale-[1.03]',
         'object-contain',
-        isPlaceholder ? 'p-6' : 'p-2',
+        isPlaceholder ? 'p-6' : 'p-3',
       ]}
     />
 
@@ -133,16 +152,22 @@ const schema = {
       }
     </div>
 
-    <AddToCart
-      client:visible
-      id={id}
-      name={name}
-      price={price}
-      image={image}
-      inStock={inStock}
-      lang={lang}
-      variant="icon"
-    />
+    {
+      /* Jashtë stoku nuk ka ç'i duhet një ishull React: s'ka çfarë shtohet në
+         shportë dhe shenja mbi foto e thotë tashmë. */
+      inStock && (
+        <AddToCart
+          client:visible
+          id={id}
+          name={name}
+          price={price}
+          image={image}
+          inStock={inStock}
+          lang={lang}
+          variant="icon"
+        />
+      )
+    }
   </div>
 
   <script type="application/ld+json" set:html={JSON.stringify(schema)} />

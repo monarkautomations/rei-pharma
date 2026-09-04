@@ -96,11 +96,10 @@ export default function AddToCart({
 
   // ---------------------------------------------------------------- ikona
   if (variant === 'icon') {
-    if (!inStock) {
-      return (
-        <span className="text-[13px] text-slate">{t(lang, 'outOfStock')}</span>
-      );
-    }
+    // Karta e tregon vetë "Jashtë stoku" me shenjë mbi foto. Po ta përsërisnim
+    // këtu, teksti i hante vendin çmimit dhe në 375px çmimi thyhej në dy
+    // rreshta ("2200" mbi "L"). Karta as nuk e thërret më këtë degë.
+    if (!inStock) return null;
 
     return (
       <>

@@ -71,10 +71,31 @@ përdor `gold-600` (`#8A6A34`, 5.01:1). Mbi sfond jeshil përdor `gold-300`.
 ### Fotot
 
 Klienti i hedh fotot te `public/blog/` (kapakët e shkrimeve) dhe `public/foto/`
-(produktet). `npm run fotot` nis vetë para çdo build-i dhe bën tri gjëra:
+(produktet). `npm run fotot` nis vetë para çdo build-i dhe bën katër gjëra:
 zvogëlon deri në 1600px, rrotullon sipas EXIF-it (pa këtë fotot vertikale nga
-telefoni dalin anash), dhe heq EXIF-in — fotot e telefonit mbajnë koordinatat
-GPS dhe ato nuk publikohen.
+telefoni dalin anash), heq EXIF-in — fotot e telefonit mbajnë koordinatat
+GPS dhe ato nuk publikohen — dhe **pret sfondin bosh te fotot e produkteve**.
+
+Prerja vlen vetëm për `public/foto`. Klienti i ngarkon fotot me sfond të
+bardhë por të pakuadruara: produkti rri i vogël në mes dhe faqja e tregon
+bardhësinë bosh si pjesë të fotos. Skripti e heq vetë, që produkti të mbushë
+kartën pa i kërkuar klientit të dijë të presë foto. Blogu nuk preket — aty
+fotoja është pamje me kompozim dhe prerja do ta prishte.
+
+E vetmja gjë që i thuhet klientit: **sfondi i fotos të jetë i bardhë.** Forma
+nuk ka rëndësi — korniza është katrore dhe fotoja shfaqet me `object-contain`,
+pra kutitë e gjera mbushin gjerësinë, shishet e gjata lartësinë. Asnjë foto
+nuk pritet nga CSS-ja; `object-cover` hante deri në gjysmën.
+
+Korniza e fotos është **e bardhë te fotot reale, bezh vetëm te placeholder-i**.
+Sepse sfondi i fotos është i bardhë: mbi bezh dilte si katror i bardhë brenda
+një kutie. Vlen te të katër vendet ku del foto e produktit — karta, faqja e
+produktit, lista e kërkimit, shporta. Placeholder-i e mban bezhin, përndryshe
+vizatimi gri do të notonte mbi të bardhë pa asnjë kufi. Krahasimi bëhet me
+`PRODUCT_PLACEHOLDER` te `site.ts`, kurrë me varg të shkruar me dorë.
+
+`PIPELINE_VERSION` te skripti ndryshohet kur ndryshon vetë përpunimi — fotot e
+produkteve rikalohen njëherë, blogu jo, që të mos rikompresohet pa nevojë.
 
 `scripts/.image-cache.json` mban shenjën e asaj që ka nxjerrë vetë skripti, që
 e njëjta foto të mos rikompresohet në çdo build dhe të humbasë cilësi. Çelësat

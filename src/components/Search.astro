@@ -91,6 +91,7 @@ const statusId = `${id}-status`;
 
 <script>
   import { searchProducts, type SearchItem } from '../lib/search';
+  import { PRODUCT_PLACEHOLDER } from '../config/site';
 
   // Indeksi shkarkohet një herë për faqe dhe ndahet mes të dyja kërkimeve.
   const indexCache = new Map<string, Promise<SearchItem[]>>();
@@ -181,7 +182,9 @@ const statusId = `${id}-status`;
             <a href="${productBase}${item.slug}"
                class="flex min-h-[56px] items-center gap-3 rounded-[10px] px-2.5 py-2">
               <img src="${item.image}" alt="" width="44" height="44" loading="lazy"
-                   class="h-11 w-11 shrink-0 rounded-md bg-bone object-contain p-1" />
+                   class="h-11 w-11 shrink-0 rounded-md object-contain p-1 ${
+                     item.image === PRODUCT_PLACEHOLDER ? 'bg-bone' : 'bg-white'
+                   }" />
               <span class="min-w-0 flex-1">
                 <span class="block truncate text-[14px] leading-snug text-forest-900">${escapeHtml(name)}</span>
                 <span class="block truncate text-[12px] text-slate">${escapeHtml(category)}</span>

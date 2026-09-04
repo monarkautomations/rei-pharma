@@ -10,7 +10,7 @@ import {
   removeItem,
   orderLink,
 } from '../lib/cart';
-import { formatPrice } from '../config/site';
+import { formatPrice, PRODUCT_PLACEHOLDER } from '../config/site';
 import { path, t, type Lang } from '../lib/i18n';
 
 function useIsDesktop() {
@@ -125,7 +125,11 @@ export default function CartWidget({ lang = 'sq' }: { lang?: Lang }) {
                         alt=""
                         width="64"
                         height="64"
-                        className="h-16 w-16 shrink-0 rounded-md bg-bone object-contain p-1.5"
+                        // Bezhi vetëm te placeholder-i: fotot reale kanë sfond
+                        // të bardhë dhe mbi bezh dilnin si katror i bardhë.
+                        className={`h-16 w-16 shrink-0 rounded-md object-contain p-1.5 ${
+                          l.image === PRODUCT_PLACEHOLDER ? 'bg-bone' : 'bg-white'
+                        }`}
                       />
 
                       <div className="min-w-0 flex-1">

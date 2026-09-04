@@ -103,3 +103,13 @@ export function formatPrice(lek: number) {
       : digits;
   return `${n < 0 ? '-' : ''}${grouped} L`;
 }
+
+/**
+ * Fotoja që del kur produkti s'ka ende foto nga klienti.
+ *
+ * Rri këtu sepse e njohin pesë vende: skema e produkteve dhe çdo komponent
+ * që e vesh ndryshe kornizën — bezh për placeholder-in, e bardhë për fotot
+ * reale. Si varg i shkruar veç-e-veç, mjaftonte një gabim shkrimi që një
+ * kartë të dilte ndryshe nga të tjerat.
+ */
+export const PRODUCT_PLACEHOLDER = '/produkt-placeholder.svg';

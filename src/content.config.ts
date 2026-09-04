@@ -1,5 +1,6 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { PRODUCT_PLACEHOLDER } from './config/site';
 
 // Kategoritë janë koleksion, jo kod. Klienti do t'i shtojë e fshijë vetë nga CMS-ja.
 const categories = defineCollection({
@@ -30,7 +31,7 @@ const products = defineCollection({
     // Shih `src/lib/catalog.ts`.
     category: z.string(),
     brand: z.string().optional(),
-    image: z.string().default('/produkt-placeholder.svg'),
+    image: z.string().default(PRODUCT_PLACEHOLDER),
     desc_sq: z.string(),
     desc_en: z.string(),
     inStock: z.boolean().default(true),
