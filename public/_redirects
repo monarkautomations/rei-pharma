@@ -1,0 +1,24 @@
+# Ridrejtime te Netlify. Ky file kopjohet ashtu siç është te `dist/`.
+#
+# Adresa e një produkti vendoset kur produkti krijohet, nga emri i tij i asaj
+# kohe, dhe nuk lëviz më. Klienti i riemërtoi tre produkte ekzistuese në vend
+# që të krijonte të reja, ndaj adresa mbeti duke treguar produktin e vjetër:
+# `/produkt/omega-3/` hapte një vitaminë D3+K2.
+#
+# File-at u riemërtuan që adresa të përputhet me përmbajtjen. Këto rreshta
+# mbajnë gjallë adresat e vjetra, që një lidhje e ruajtur ose e indeksuar nga
+# Google të mos bjerë te 404. `301` do të thotë "zhvendosur përgjithmonë", pra
+# Google e kalon vlerën te adresa e re.
+#
+# Nuk ka nevojë të shtohet rresht për çdo riemërtim të ardhshëm të klientit:
+# një produkt i riemërtuar nga CMS-ja e mban adresën e vet: vetëm emri brenda
+# ndryshon. Këto tre janë pasojë e riemërtimit që bëmë ne.
+
+/produkt/omega-3            /produkt/vitamina-d3-k2-pocket-30-bustina            301
+/en/product/omega-3         /en/product/vitamina-d3-k2-pocket-30-bustina         301
+
+/produkt/vitamine-d3        /produkt/alpherol-vitamin-e-400iu-30-kapsula         301
+/en/product/vitamine-d3     /en/product/alpherol-vitamin-e-400iu-30-kapsula      301
+
+/produkt/magnez-bisglicinat /produkt/magnes-active-30-bustina                    301
+/en/product/magnez-bisglicinat /en/product/magnes-active-30-bustina              301

@@ -9,7 +9,8 @@
     "audit": "node scripts/audit.mjs",
     "logo": "node scripts/build-logo.mjs && node scripts/build-blog-placeholders.mjs",
     "fotot": "node scripts/optimize-images.mjs",
-    "skema": "node scripts/test-schema.mjs"
+    "skema": "node scripts/test-schema.mjs",
+    "slugs": "node scripts/check-slugs.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.0",

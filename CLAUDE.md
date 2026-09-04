@@ -130,6 +130,26 @@ qëllim: nëse fshihet një kategori që ka produkte brenda, build-i vazhdon,
 produktet mbeten te `/produktet` dhe del njoftim në terminal. Shih
 `getOrphanProducts()`.
 
+## Adresat e produkteve
+
+Adresa vjen nga emri i file-it te `src/content/products/`, i cili vendoset kur
+produkti krijohet dhe nuk lëviz kur klienti i ndërron emrin brenda. Kjo është
+sjellje e duhur — adresat s'duhet të ndryshojnë vetvetiu — por krijon një kurth:
+nëse klienti **ripërdor** një produkt ekzistues në vend që të krijojë të ri,
+adresa mbetet duke treguar produktin e vjetër. Ndodhi më 4 shtator:
+`/produkt/omega-3/` hapte një vitaminë D3+K2.
+
+U riemërtuan tre file dhe `public/_redirects` mban gjallë adresat e vjetra me
+301. Adresat e shkurtra që janë thjesht më të shkurtra se emri i plotë
+(`krem-dielli-spf50` për "Krem dielli SPF 50+ për fytyrë") **nuk preken** —
+janë të sakta dhe adresa e shkurtër është më e mirë.
+
+Kur të riemërtohet ndonjë tjetër, kontrollo me:
+
+```bash
+npm run slugs   # krahason çdo slug me emrin e produktit
+```
+
 ## Porosia
 
 Nuk ka pagesë me kartë. Klienti mbush shportën, klikon, hapet WhatsApp me
