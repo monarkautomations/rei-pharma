@@ -11,5 +11,5 @@ blurb_en: |-
   Gentle Care for Little Ones
   Everything for Baby Care
   Gentle Care for Baby Skin
-order: 99
+order: 4
 ---
