@@ -2,10 +2,17 @@ backend:
   name: github
   repo: monarkautomations/rei-pharma
   branch: main
-  # Netlify e shërben autentikimin GitHub vetë — nuk kërkohet Netlify Identity
-  # dhe as ndonjë aplikacion OAuth i ndarë. Mjafton që repo-ja të jetë e
-  # lidhur me këtë sajt në Netlify (është).
-  base_url: https://api.netlify.com
+  # Hyrja kalon nga një "portier" ynë te Cloudflare, jo nga Netlify.
+  #
+  # Netlify e shërbente vetë autentikimin, por vetëm për sajte të hostuara te
+  # ai: kur site-i kaloi te Cloudflare, `api.netlify.com/auth` filloi të kthente
+  # "Not Found", sepse nuk e njihte më adresën. Portieri është
+  # github.com/sveltia/sveltia-cms-auth, i vendosur te e njëjta llogari
+  # Cloudflare; konfigurimi i tij rri te `wrangler.toml` i atij repo-je.
+  #
+  # Kur të lidhet `reipharma.al`, kjo rresht nuk ndryshon — domeni është
+  # tashmë te lista e lejuar e portierit.
+  base_url: https://sveltia-cms-auth.reipharma.workers.dev
   auth_endpoint: auth
 
 # Parazgjedhja globale — përdoret vetëm nëse një koleksion s'ka të vetat.
