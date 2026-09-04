@@ -221,7 +221,23 @@ shpjegimet, dhe u zgjodh i gabuari.
 
 Mësimi: kur dy shpjegime përputhen me të njëjtat fakte, shko te burimi që i
 ndan — këtu faqja "Deploys" e Netlify-t — në vend që të ndërtosh mbi hamendje.
-Workflow-i u hoq pasi u gjet shkaku i vërtetë.
+
+Workflow-i u hoq pasi u gjet shkaku i vërtetë. Nuk duhet rikthyer: lidhja e
+vetë Netlify-t me GitHub-in punon, dhe të dyja bashkë do të nisnin dy ndërtime
+për çdo ndryshim — plani falas ka 300 minuta në muaj. Secret-i
+`NETLIFY_BUILD_HOOK` mbetet te GitHub Secrets, i padëmshëm; hiqe nëse do.
+
+### Kur diçka nuk del online
+
+Rendi i kontrollit, nga më i mundshmi:
+
+1. **Netlify → Deploys.** Aty duket çdo ndërtim me shkakun e dështimit. Ky
+   është burimi i vërtetë; gjithçka tjetër është hamendje.
+2. Site-i online nuk prishet nga një ndërtim i dështuar — mbetet versioni i
+   mëparshëm. Rreziku është që puna e klientit të mos dalë, jo që faqja të
+   thyhet.
+3. Nëse ndërtimi është i gjelbër por diçka mungon, kërko `[katalogu]` te log-u:
+   aty shkruhet me emër çdo hyrje që u korrigjua ose u la jashtë.
 
 ### Skemat rrinë te `.mjs`, jo `.ts` — me qëllim
 
