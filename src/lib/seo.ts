@@ -42,3 +42,22 @@ export function productDescription(desc: string, cmimi: string, bishti: string):
 export function trimDescription(text: string): string {
   return preTeFjala(text, MAX);
 }
+
+/** Sa gjatë e tregon Google titullin para se ta presë. Auditi kërkon nën 65. */
+const MAX_TITLE = 62;
+
+/**
+ * Titulli i faqes: emri i përmbajtjes plus marka.
+ *
+ * Emrat i shkruan klienti dhe ai shkruan gjatë — "CeraVe Krem Dielli Fluid i
+ * Padukshëm me Teksturë të Thatë" bën 75 shkronja bashkë me markën, dhe Google
+ * e pret në mes. Marka bie e para, sepse emri i produktit është ai që kërkon
+ * njeriu; Google-i e shton vetë emrin e site-it kur ka vend.
+ */
+export function pageTitle(emri: string, marka: string): string {
+  const i = emri.trim();
+  const plote = `${i} — ${marka}`;
+  if (plote.length <= MAX_TITLE) return plote;
+  if (i.length <= MAX_TITLE) return i;
+  return preTeFjala(i, MAX_TITLE);
+}

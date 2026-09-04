@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
 import type { Category, Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
+import { pageTitle } from '../../lib/seo';
 
 interface Props {
   lang: Lang;
@@ -16,7 +17,7 @@ const { lang, alternates, category, products, siblings } = Astro.props;
 ---
 
 <Base
-  title={`${category.name} — Rei Pharma`}
+  title={pageTitle(category.name, 'Rei Pharma')}
   description={category.blurb}
   lang={lang}
   alternates={alternates}
