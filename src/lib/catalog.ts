@@ -1,6 +1,61 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { PRODUCT_PLACEHOLDER, PRICE_INVALID } from './schema';
 
 export type Lang = 'sq' | 'en';
+
+/**
+ * Rojtari mes CMS-së dhe faqes.
+ *
+ * Skema te `schema.ts` nuk dështon kurrë — korrigjon dhe vazhdon. Këtu vendoset
+ * pastaj çfarë mund të dalë vërtet para vizitorit: një produkt pa çmim nuk
+ * shitet dot, një foto që s'ekziston nuk shfaqet dot. Në vend që faqja të dalë
+ * e thyer, hyrja lihet jashtë ose zëvendësohet, dhe problemi shkruhet në
+ * terminal që ta shohë kush ndërton, jo klienti.
+ */
+const problemet = new Set<string>();
+
+function njofto(mesazhi: string) {
+  // Faqet ndërtohen njëra pas tjetrës dhe katalogu lexohet shumë herë; pa këtë
+  // i njëjti njoftim do të mbushte terminalin dhjetëra herë.
+  if (problemet.has(mesazhi)) return;
+  problemet.add(mesazhi);
+  console.warn(`[katalogu] ${mesazhi}`);
+}
+
+/**
+ * A ekziston vërtet fotoja te `public/`?
+ *
+ * Klienti mund ta fshijë ose riemërtojë një foto nga GitHub-i pa e prekur
+ * produktin. Pa këtë kontroll, karta do të dilte me foto të thyer — më keq se
+ * vizatimi gri i përkohshëm.
+ */
+const fotoEkziston = new Map<string, boolean>();
+
+function fotoEVlefshme(rruga: string, produkti: string): string {
+  if (!rruga || rruga === PRODUCT_PLACEHOLDER) return PRODUCT_PLACEHOLDER;
+  // Foto nga interneti nuk kontrollohet dot lokalisht; besoji.
+  if (/^https?:\/\//.test(rruga)) return rruga;
+
+  let ka = fotoEkziston.get(rruga);
+  if (ka === undefined) {
+    ka = existsSync(join(process.cwd(), 'public', decodeURIComponent(rruga)));
+    fotoEkziston.set(rruga, ka);
+  }
+
+  if (!ka) {
+    njofto(`"${produkti}": fotoja "${rruga}" nuk ekziston te public/. U vu vizatimi i përkohshëm.`);
+    return PRODUCT_PLACEHOLDER;
+  }
+  return rruga;
+}
+
+/** Emër i lexueshëm nga slug-u, kur klienti e ka lënë fushën bosh. */
+function emriNgaSlug(slug: string): string {
+  const fjale = slug.replace(/[-_]+/g, ' ').trim();
+  return fjale ? fjale.charAt(0).toUpperCase() + fjale.slice(1) : slug;
+}
 
 export type Category = {
   slug: string;
@@ -26,27 +81,55 @@ export type Product = {
 const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
 
 function toCategory(entry: CollectionEntry<'categories'>, lang: Lang): Category {
+  const d = entry.data;
+  // Gjuha tjetër zë vendin e asaj që mungon; slug-u është rrjeta e fundit,
+  // që të mos dalë kurrë një filtër pa emër.
+  const name =
+    (lang === 'en' ? d.name_en || d.name_sq : d.name_sq || d.name_en) ||
+    emriNgaSlug(entry.id);
+
+  if (!d.name_sq || !d.name_en) {
+    njofto(`kategoria "${entry.id}": mungon emri në një gjuhë. U përdor tjetra.`);
+  }
+
   return {
     slug: entry.id,
-    name: lang === 'en' ? entry.data.name_en : entry.data.name_sq,
-    blurb: lang === 'en' ? entry.data.blurb_en : entry.data.blurb_sq,
-    order: entry.data.order,
+    name,
+    blurb: (lang === 'en' ? d.blurb_en || d.blurb_sq : d.blurb_sq || d.blurb_en) || '',
+    order: d.order,
   };
 }
 
 function toProduct(entry: CollectionEntry<'products'>, lang: Lang): Product {
+  const d = entry.data;
+  const name =
+    (lang === 'en' ? d.name_en || d.name_sq : d.name_sq || d.name_en) ||
+    emriNgaSlug(entry.id);
+
+  if (!d.name_sq || !d.name_en) {
+    njofto(`"${entry.id}": mungon emri në një gjuhë. U përdor tjetra.`);
+  }
+
+  // Çmim i vjetër më i vogël se aktuali do të nxirrte "ofertë" të rreme dhe
+  // një zbritje negative te faqja e produktit. Hiqet në heshtje për vizitorin.
+  let oldPrice = d.oldPrice;
+  if (oldPrice !== undefined && oldPrice <= d.price) {
+    njofto(`"${entry.id}": çmimi i vjetër (${oldPrice}) nuk është më i madh se ${d.price}. Oferta nuk u shfaq.`);
+    oldPrice = undefined;
+  }
+
   return {
     slug: entry.id,
-    name: lang === 'en' ? entry.data.name_en : entry.data.name_sq,
-    desc: lang === 'en' ? entry.data.desc_en : entry.data.desc_sq,
-    price: entry.data.price,
-    oldPrice: entry.data.oldPrice,
-    category: entry.data.category,
-    brand: entry.data.brand,
-    image: entry.data.image,
-    inStock: entry.data.inStock,
-    featured: entry.data.featured,
-    order: entry.data.order,
+    name,
+    desc: (lang === 'en' ? d.desc_en || d.desc_sq : d.desc_sq || d.desc_en) || '',
+    price: d.price,
+    oldPrice,
+    category: d.category,
+    brand: d.brand,
+    image: fotoEVlefshme(d.image, entry.id),
+    inStock: d.inStock,
+    featured: d.featured,
+    order: d.order,
   };
 }
 
@@ -57,7 +140,16 @@ export async function getCategories(lang: Lang = 'sq'): Promise<Category[]> {
 
 export async function getProducts(lang: Lang = 'sq'): Promise<Product[]> {
   const entries = await getCollection('products');
-  return entries.map((e) => toProduct(e, lang)).sort(byOrder);
+
+  // Produkt pa çmim të vlefshëm nuk shitet dot: shporta do të mblidhte 0 L dhe
+  // mesazhi i WhatsApp-it do të nisej me çmim të rremë. Më mirë jashtë liste.
+  const perdorshme = entries.filter((e) => {
+    if (e.data.price > PRICE_INVALID) return true;
+    njofto(`"${e.id}": çmimi mungon ose s'është numër. Produkti nuk u shfaq.`);
+    return false;
+  });
+
+  return perdorshme.map((e) => toProduct(e, lang)).sort(byOrder);
 }
 
 /**
@@ -107,8 +199,17 @@ export async function getOrphanProducts(lang: Lang = 'sq'): Promise<Product[]> {
 export async function getPosts(lang: Lang = 'sq') {
   const posts = await getCollection('posts');
   return posts
-    .filter((p) => p.data.lang === lang && !p.data.draft)
-    .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+    .filter((p) => {
+      if (p.data.lang !== lang || p.data.draft) return false;
+      // Pa datë të vlefshme, blogu do të rendiste sipas 1 janarit 1970 dhe
+      // shkrimi do të dilte me atë datë përpara lexuesit.
+      if (!p.data.date) {
+        njofto(`shkrimi "${p.id}": data mungon ose s'është e vlefshme. Shkrimi nuk u shfaq.`);
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.data.date!.getTime() - a.data.date!.getTime());
 }
 
 /**

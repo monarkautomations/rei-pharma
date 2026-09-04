@@ -115,7 +115,16 @@ const schema = {
     }
   </div>
 
-  <h3 class="mt-3 font-sans text-[15px] leading-snug text-forest-900">
+  {/*
+    Dy rreshta, jo më shumë. Një emër i gjatë nga CMS-ja e bënte titullin 248px
+    dhe kartën 527px, ndërsa fqinja në të njëjtin rresht tërhiqej po aq e lartë
+    dhe mbetej gjysma bosh. Emri i plotë del te faqja e produktit.
+
+    `overflow:hidden` që sjell `line-clamp` NUK e pret shtrirjen e lidhjes mbi
+    kartë: `after` pozicionohet ndaj `article`, që është jashtë kësaj kutie.
+    Provuar — e gjithë karta klikohet edhe kur emri pritet.
+  */}
+  <h3 class="mt-3 line-clamp-2 font-sans text-[15px] leading-snug text-forest-900">
     <a
       href={href}
       class="after:absolute after:inset-0 after:rounded-[14px] group-hover:text-gold-600"

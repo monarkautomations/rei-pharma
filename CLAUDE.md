@@ -143,6 +143,33 @@ mesazhi kalon në përmbledhje. Mos e hiq këtë logjikë.
 Barnat me recetë NUK shiten online. Vetëm OTC, kozmetikë, suplemente, pajisje.
 Mos shto kategori ose produkte që bien ndesh me këtë.
 
+## Përmbajtja nga CMS-ja nuk e thyen dot site-in
+
+Rregull i shtuar pasi ndodhi e kundërta: klienti la bosh një fushë, CMS-ja
+shkroi `oldPrice: null`, skema e refuzoi dhe build-i u ndal. Shtatë commit-e të
+tijat mbetën pa dalë online, pa asnjë shenjë te CMS-ja — për të gjithçka dukej
+e ruajtur.
+
+Kontrata sot ka dy shtresa:
+
+1. **`src/lib/schema.ts` nuk dështon kurrë.** Çdo fushë ka rrugëdalje: `null`,
+   `""`, tekst në vend të numri, datë e pavlefshme — të gjitha korrigjohen.
+   Kurrë mos shto `z.number()` ose `z.string()` të zhveshur; përdor
+   `cmsOptional` / `cmsDefault`.
+2. **`src/lib/catalog.ts` është rojtari.** Vendos çfarë mund të dalë para
+   vizitorit: produkt pa çmim nuk shfaqet, foto që s'ekziston zëvendësohet me
+   placeholder-in, çmim i vjetër më i vogël se aktuali nuk bëhet "ofertë" e
+   rreme, emër që mungon merret nga gjuha tjetër ose nga slug-u. Çdo korrigjim
+   shkruhet në terminal me parashtesën `[katalogu]`.
+
+`scripts/test-schema.mjs` nis para çdo build-i dhe i jep skemës pikërisht atë
+që shkruan CMS-ja. **Kur shton fushë te `public/admin/config.yml`, shto rast
+atje.** Ndryshe kjo klasë gabimi kthehet, dhe kthehet te klienti, jo te ti.
+
+Kufizim me vetëdije: emrat e produkteve priten në dy rreshta te kartat
+(`line-clamp-2`). Pa këtë, një emër i gjatë e bënte kartën 527px kundrejt
+320px të fqinjës. Emri i plotë del te faqja e produktit.
+
 ## Gjendja aktuale
 
 Të mbaruara, në të dyja gjuhët: kryefaqja, produktet, kategoritë, faqja e

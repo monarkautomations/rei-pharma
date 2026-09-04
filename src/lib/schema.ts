@@ -1,78 +1,138 @@
 /**
- * Skemat e përmbajtjes, veçmas nga `content.config.ts`.
+ * Skemat e përmbajtjes. Rregulli i vetëm: **nuk dështojnë kurrë.**
  *
- * Rrinë këtu që t'i provojë edhe `scripts/test-schema.mjs` pa nisur Astro-n:
- * ai u jep atyre pikërisht ato që shkruan CMS-ja kur klienti lë një fushë
- * bosh. Pa atë provë, një skemë që s'e pranon daljen e CMS-së e thyen
- * build-in — dhe atëherë asgjë prej punës së klientit nuk del online.
+ * Përmbajtjen e shkruan klienti nga CMS-ja. Nëse skema e refuzon një fushë,
+ * Astro e ndalon build-in — dhe atëherë asgjë prej punës së tij nuk del
+ * online, pa asnjë shenjë te CMS-ja: ai shtyp "Save", i thuhet se u ruajt,
+ * dhe web-i nuk lëviz. Ka ndodhur: një `oldPrice: null` i vetëm mbajti pezull
+ * shtatë commit-e, dy produkte të reja dhe katër fotot e para reale.
+ *
+ * Ndaj çdo fushë ka rrugëdalje. Vlera e gabuar zëvendësohet me një të
+ * arsyeshme dhe raportohet në terminal nga `src/lib/catalog.ts`, i cili vendos
+ * pastaj nëse hyrja mund të shfaqet apo duhet lënë jashtë. Faqja del gjithmonë.
+ *
+ * Provohet nga `scripts/test-schema.mjs`, që nis para çdo build-i.
  */
 import { z } from 'zod';
 
+export const PRODUCT_PLACEHOLDER = '/produkt-placeholder.svg';
+
+/** Çmimi 0 do të thotë "i papërdorshëm" — catalog.ts e nxjerr produktin jashtë. */
+export const PRICE_INVALID = 0;
+
 /**
  * Sveltia CMS nuk e heq fushën kur klienti e lë bosh: shkruan `null` te
- * numrat dhe datat, dhe `""` te tekstet e te fotot. Zod-i i quan të dyja
- * vlera të vërteta dhe i refuzon, ndaj përkthehen në "mungon" para kontrollit.
- *
- * Kjo nuk është zbukurim. Një `oldPrice: null` i vetëm e ndaloi build-in dhe
- * shtatë commit-e të klientit — produkte të reja, fotot e para reale — mbetën
- * pa dalë online pa asnjë shenjë te CMS-ja.
+ * numrat dhe datat, `""` te tekstet dhe te fotot. Të dyja do të thonë "bosh".
  */
 const boshEshteMungese = (v: unknown) => (v === null || v === '' ? undefined : v);
 
-/** Fushë opsionale që CMS-ja mund ta shkruajë `null` ose `""`. */
+/** Opsionale, e duron `null` dhe `""`, dhe s'bie kurrë. */
 function cmsOptional<T extends z.ZodTypeAny>(schema: T) {
-  return z.preprocess(boshEshteMungese, schema.optional());
+  return z.preprocess(boshEshteMungese, schema.optional().catch(undefined));
 }
 
-/** Fushë me vlerë të parazgjedhur që CMS-ja mund ta shkruajë `null` ose `""`. */
-function cmsDefault<T extends z.ZodTypeAny>(schema: T, fallback: z.input<T>) {
-  return z.preprocess(boshEshteMungese, schema.default(fallback as never));
+/** Me vlerë të parazgjedhur, e duron çdo plehrë, dhe s'bie kurrë. */
+function cmsDefault<T extends z.ZodTypeAny>(schema: T, fallback: z.infer<T>) {
+  return z.preprocess(boshEshteMungese, schema.default(fallback as never)).catch(fallback);
 }
 
-export const PRODUCT_PLACEHOLDER = '/produkt-placeholder.svg';
+/** Tekst i detyrueshëm që megjithatë s'guxon ta ndalë build-in. */
+const cmsText = cmsDefault(z.string(), '');
+
+/**
+ * Numër nga çfarëdo që shkruan klienti.
+ *
+ * Fusha e CMS-së është numerike, po përmbajtja mund të vijë edhe nga GitHub-i
+ * ose nga një import i vjetër. "2 400 L" bëhet 2400; ajo që s'ka fare shifra
+ * bëhet `PRICE_INVALID`, dhe produkti nuk shfaqet fare — më mirë pa produkt
+ * sesa me çmim të rremë.
+ */
+const numri = (v: unknown): number => {
+  if (typeof v === 'number' && Number.isFinite(v)) return Math.round(v);
+  if (typeof v === 'string') {
+    const shifrat = v.replace(/[^\d.,-]/g, '').replace(/[.,](?=\d{3}\b)/g, '').replace(',', '.');
+    const n = Number.parseFloat(shifrat);
+    if (Number.isFinite(n)) return Math.round(n);
+  }
+  return PRICE_INVALID;
+};
+
+const cmsPrice = z.preprocess(
+  (v) => (v === null || v === '' || v === undefined ? PRICE_INVALID : numri(v)),
+  z.number().int().min(0),
+).catch(PRICE_INVALID);
+
+/** Numër opsional: mungon nëse s'del dot numër i vlefshëm. */
+const cmsOptionalPrice = z.preprocess((v) => {
+  if (v === null || v === '' || v === undefined) return undefined;
+  const n = numri(v);
+  return n > 0 ? n : undefined;
+}, z.number().int().positive().optional().catch(undefined));
+
+/** Po/jo nga çdo formë që mund të marrë ("true", "po", 1). */
+const cmsBoolean = (fallback: boolean) =>
+  z.preprocess((v) => {
+    if (typeof v === 'boolean') return v;
+    if (typeof v === 'string') {
+      const s = v.trim().toLowerCase();
+      if (['true', 'po', 'yes', '1'].includes(s)) return true;
+      if (['false', 'jo', 'no', '0'].includes(s)) return false;
+    }
+    if (typeof v === 'number') return v !== 0;
+    return fallback;
+  }, z.boolean().catch(fallback));
+
+/**
+ * Data e postit. Nëse s'del datë e vlefshme, kthen `null` — dhe `getPosts()`
+ * e fsheh postin, që të mos dalë "1 janar 1970" te blogu i një farmacie.
+ */
+const cmsDate = z.preprocess((v) => {
+  if (v === null || v === '' || v === undefined) return null;
+  const d = v instanceof Date ? v : new Date(String(v));
+  return Number.isNaN(d.getTime()) ? null : d;
+}, z.date().nullable().catch(null));
 
 export const categorySchema = z.object({
-  name_sq: z.string(),
-  name_en: z.string(),
-  blurb_sq: z.string(),
-  blurb_en: z.string(),
+  name_sq: cmsText,
+  name_en: cmsText,
+  blurb_sq: cmsText,
+  blurb_en: cmsText,
   // Kategoritë nuk kanë foto me qëllim — fotot i mban produkti.
   order: cmsDefault(z.number(), 99),
 });
 
 export const productSchema = z.object({
-  name_sq: z.string(),
-  name_en: z.string(),
+  name_sq: cmsText,
+  name_en: cmsText,
   // Çmimi gjithmonë në lekë, numër i plotë. Pa presje, pa simbol.
-  price: z.number().int().positive(),
-  oldPrice: cmsOptional(z.number().int().positive()),
+  price: cmsPrice,
+  oldPrice: cmsOptionalPrice,
   // Slug-u i një kategorie te src/content/categories.
   //
   // Me qëllim string i thjeshtë, jo reference(): nëse klienti fshin një
   // kategori që ka produkte brenda, build-i duhet të vazhdojë. Produktet e
   // mbetura pa kategori dalin te /produktet dhe njoftohen në terminal.
-  // Shih `src/lib/catalog.ts`.
-  category: z.string(),
+  category: cmsText,
   brand: cmsOptional(z.string()),
   image: cmsDefault(z.string(), PRODUCT_PLACEHOLDER),
-  desc_sq: z.string(),
-  desc_en: z.string(),
-  inStock: cmsDefault(z.boolean(), true),
-  featured: cmsDefault(z.boolean(), false),
+  desc_sq: cmsText,
+  desc_en: cmsText,
+  inStock: cmsBoolean(true),
+  featured: cmsBoolean(false),
   order: cmsDefault(z.number(), 99),
 });
 
 export const postSchema = z.object({
-  title: z.string(),
-  excerpt: z.string(),
+  title: cmsText,
+  excerpt: cmsText,
   lang: cmsDefault(z.enum(['sq', 'en']), 'sq'),
   translationOf: cmsOptional(z.string()),
   // Foto kryesore e postit. Pa të përdoret një pamje pa foto.
   cover: cmsOptional(z.string()),
   coverAlt: cmsOptional(z.string()),
-  date: z.coerce.date(),
+  date: cmsDate,
   updated: cmsOptional(z.coerce.date()),
   author: cmsDefault(z.string(), 'Farmaci Rei'),
   tag: cmsOptional(z.string()),
-  draft: cmsDefault(z.boolean(), false),
+  draft: cmsBoolean(false),
 });
