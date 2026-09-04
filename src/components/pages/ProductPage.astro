@@ -5,6 +5,7 @@ import AddToCart from '../AddToCart';
 import { site, formatPrice, waLink, PRODUCT_PLACEHOLDER } from '../../config/site';
 import type { Category, Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
+import { productDescription } from '../../lib/seo';
 
 interface Props {
   lang: Lang;
@@ -83,7 +84,7 @@ const tail =
     ? `. Order online from ${site.legalName} in Tirana, pay on delivery.`
     : `. Porosit online nga ${site.legalName} në Tiranë, paguaj në dorëzim.`;
 
-const metaDescription = `${product.desc} ${formatPrice(product.price)}${tail}`.slice(0, 300);
+const metaDescription = productDescription(product.desc, formatPrice(product.price), tail);
 
 const askMessage =
   lang === 'en'

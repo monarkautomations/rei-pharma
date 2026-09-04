@@ -4,11 +4,12 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/optimize-images.mjs && astro build",
+    "build": "node scripts/test-schema.mjs && node scripts/optimize-images.mjs && astro build",
     "preview": "astro preview",
     "audit": "node scripts/audit.mjs",
     "logo": "node scripts/build-logo.mjs && node scripts/build-blog-placeholders.mjs",
-    "fotot": "node scripts/optimize-images.mjs"
+    "fotot": "node scripts/optimize-images.mjs",
+    "skema": "node scripts/test-schema.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.0",

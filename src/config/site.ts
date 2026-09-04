@@ -107,9 +107,12 @@ export function formatPrice(lek: number) {
 /**
  * Fotoja që del kur produkti s'ka ende foto nga klienti.
  *
- * Rri këtu sepse e njohin pesë vende: skema e produkteve dhe çdo komponent
- * që e vesh ndryshe kornizën — bezh për placeholder-in, e bardhë për fotot
- * reale. Si varg i shkruar veç-e-veç, mjaftonte një gabim shkrimi që një
- * kartë të dilte ndryshe nga të tjerat.
+ * E njohin pesë vende: skema e produkteve dhe çdo komponent që e vesh ndryshe
+ * kornizën — bezh për placeholder-in, e bardhë për fotot reale. Si varg i
+ * shkruar veç-e-veç, mjaftonte një gabim shkrimi që një kartë të dilte
+ * ndryshe nga të tjerat.
+ *
+ * Burimi është `src/lib/schema.ts`, sepse atë file e lexon edhe testi i
+ * skemës, i cili nuk mund të importojë nga këtu pa tërhequr Astro-n.
  */
-export const PRODUCT_PLACEHOLDER = '/produkt-placeholder.svg';
+export { PRODUCT_PLACEHOLDER } from '../lib/schema';

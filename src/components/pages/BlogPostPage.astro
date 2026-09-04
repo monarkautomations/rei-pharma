@@ -6,6 +6,7 @@ import CoverImage from '../CoverImage.astro';
 import { formatDate } from '../../lib/catalog';
 import { site, waLink } from '../../config/site';
 import { path, t, type Lang } from '../../lib/i18n';
+import { trimDescription } from '../../lib/seo';
 
 interface Props {
   lang: Lang;
@@ -66,7 +67,7 @@ const askMessage =
 
 <Base
   title={`${post.data.title} — ${site.brandName}`}
-  description={post.data.excerpt}
+  description={trimDescription(post.data.excerpt)}
   lang={lang}
   image={shareImage}
   schemas={[articleSchema, breadcrumbSchema]}
