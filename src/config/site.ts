@@ -55,10 +55,26 @@ export const site = {
  * Numrat që animohen te kryefaqja. Konfirmuar nga klienti.
  */
 export const stats = [
-  { value: 12, suffix: '+', label: 'Vite në shërbim të Tiranës' },
-  { value: 2500, suffix: '+', label: 'Produkte në raft' },
-  { value: 8000, suffix: '+', label: 'Klientë të shërbyer' },
-  { value: 100, suffix: '%', label: 'Produkte origjinale' },
+  {
+    value: 12,
+    suffix: '+',
+    label: { sq: 'Vite në shërbim të Tiranës', en: 'Years serving Tirana' },
+  },
+  {
+    value: 2500,
+    suffix: '+',
+    label: { sq: 'Produkte në raft', en: 'Products on the shelf' },
+  },
+  {
+    value: 8000,
+    suffix: '+',
+    label: { sq: 'Klientë të shërbyer', en: 'Customers served' },
+  },
+  {
+    value: 100,
+    suffix: '%',
+    label: { sq: 'Produkte origjinale', en: 'Genuine products' },
+  },
 ] as const;
 
 // Kategoritë NUK janë më këtu. Kaluan te src/content/categories/*.md

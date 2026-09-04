@@ -210,9 +210,11 @@ const dictionary = {
   home: { sq: 'Kryefaqja', en: 'Home' },
 
   // Kryefaqja
+  // Adresa përsëritet tashmë te shiriti i sipërm, footer-i, kontakti dhe
+  // seksioni "Na gjen këtu" — këtu del diçka që s'thuhet gjetkë.
   heroEyebrow: {
-    sq: 'Farmaci në Rrugën Albanopoli',
-    en: 'Pharmacy on Rruga Albanopoli',
+    sq: 'Produkte origjinale, këshillë farmacisti',
+    en: 'Genuine products, pharmacist advice',
   },
   heroTitleA: { sq: 'Shëndeti juaj,', en: 'Your health,' },
   heroTitleB: { sq: 'kujdesi ynë', en: 'our care' },

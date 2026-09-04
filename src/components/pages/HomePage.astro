@@ -47,31 +47,31 @@ const meta = {
   lang={lang}
   alternates={alternates}
 >
-  <!-- ============================ HERO ============================ -->
-  <!--
+  {/* ============================ HERO ============================ */}
+  {/*
     Foto e vitrinës u hoq me kërkesë të klientit. Sfondi tani është aurora me
     ngjyrat e logos. Fotoja mbetet e përdorur te seksioni "Na gjen këtu",
     te `og:image` dhe te schema — Google-it i duhet një foto e vërtetë.
-  -->
+  */}
   <section class="relative isolate overflow-hidden">
     <AuroraBackground class="-z-10" />
 
-    <!--
+    {/*
       Hije mbi aurorën, jo dekor: njollat lëvizin, ndaj sfondi nën tekstin
       ndryshon vazhdimisht. Pa këtë, kontrasti do të ishte i mirë në një çast
       dhe i dobët në një tjetër. Aurora mbetet e dukshme djathtas.
-    -->
+    */}
     <div
       class="absolute inset-0 -z-10 bg-gradient-to-t from-forest-950/80 via-forest-950/30 to-transparent
              md:bg-gradient-to-r md:from-forest-950/72 md:via-forest-950/18 md:to-transparent"
     >
     </div>
 
-    <!--
+    {/*
       Dikur teksti rrinte poshtë (`items-end` me `pt-36`), që të mos mbulonte
       vitrinën në foto. Pa foto ajo hapësirë nuk ka kuptim — teksti tani rri në
       qendër dhe hero-ja fillon menjëherë poshtë navbar-it.
-    -->
+    */}
     <div
       class="mx-auto flex min-h-[460px] max-w-[1200px] items-center px-4 py-12 sm:min-h-[520px] md:min-h-[620px] md:py-24"
     >
@@ -115,7 +115,7 @@ const meta = {
 
   <TrustStrip lang={lang} />
 
-  <!-- ======================== TË ZGJEDHURA ======================== -->
+  {/* ======================== TË ZGJEDHURA ======================== */}
   {
     featured.length > 0 && (
       <section class="mx-auto max-w-[1200px] px-4 pt-16 sm:pt-24">
@@ -153,7 +153,7 @@ const meta = {
     )
   }
 
-  <!-- ========================= KATEGORITË ========================= -->
+  {/* ========================= KATEGORITË ========================= */}
   <section class="mx-auto max-w-[1200px] px-4 py-16 sm:py-24">
     <div class="max-w-xl" data-reveal>
       <p class="eyebrow">{t(lang, 'whatWeStock')}</p>
@@ -210,9 +210,9 @@ const meta = {
     </div>
   </section>
 
-  <StatsCounter />
+  <StatsCounter lang={lang} />
 
-  <!-- =========================== BLOGU =========================== -->
+  {/* =========================== BLOGU =========================== */}
   {
     posts.length > 0 && (
       <section class="mx-auto max-w-[1200px] px-4 py-16 sm:py-24">
@@ -249,7 +249,7 @@ const meta = {
     )
   }
 
-  <!-- ======================== VIZITA / CTA ======================== -->
+  {/* ======================== VIZITA / CTA ======================== */}
   <section class="border-t border-mist bg-cream">
     <div class="mx-auto max-w-[1200px] px-4 py-16 sm:py-20">
       <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">

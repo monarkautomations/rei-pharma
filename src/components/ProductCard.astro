@@ -54,11 +54,11 @@ const schema = {
 };
 ---
 
-<!--
+{/*
   E gjithë karta klikohet, por lidhja e vërtetë rri vetëm te titulli dhe
   zgjerohet mbi kartën me `after:absolute`. Butoni i shportës ngrihet mbi të me
   `relative z-10`, që klikimi mbi "Shto në shportë" të mos hapë faqen.
--->
+*/}
 <article
   class="group relative flex flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4"
 >
@@ -101,20 +101,20 @@ const schema = {
     </a>
   </h3>
 
-  <!--
+  {/*
     Pa `flex-1`: bashkë me `line-clamp-2` kutia rritej përtej dy rreshtave dhe
     rreshti i tretë dilte i prerë përgjysmë. Hapësira e mbetur shtyhet poshtë
     me `mt-auto` te rreshti i çmimit, që çmimet të rreshtohen mes kartave.
-  -->
+  */}
   <p class="mt-1 line-clamp-2 text-[13px] leading-relaxed text-slate">
     {desc}
   </p>
 
-  <!--
+  {/*
     Çmimi majtas, shporta djathtas. Butoni i gjerë me tekst hante gjysmën e
     kartës në telefon; ikona e lë vendin te emri dhe çmimi, që janë arsyeja
     pse dikush e shikon kartën. Emri i produktit rri te `aria-label`.
-  -->
+  */}
   <div class="relative z-10 mt-auto flex items-end justify-between gap-3 pt-3">
     <div class="flex min-w-0 flex-wrap items-baseline gap-x-2">
       <span class="text-[19px] font-medium tabular-nums text-forest-900">

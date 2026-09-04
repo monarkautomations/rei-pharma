@@ -42,7 +42,7 @@ const isActive = (href: string) => {
 };
 ---
 
-<!-- Shiriti i sipërm: orari dhe telefoni. Zhduket në telefon që të mos hajë ekran. -->
+{/* Shiriti i sipërm: orari dhe telefoni. Zhduket në telefon që të mos hajë ekran. */}
 <div class="hidden bg-forest-900 text-bone/80 lg:block">
   <div
     class="mx-auto flex max-w-[1200px] items-center justify-between gap-6 px-4 py-2 text-[13px]"
@@ -75,8 +75,8 @@ const isActive = (href: string) => {
         class="shrink-0"
         aria-label={`${site.brandName} — ${t(lang, 'homeLink')}`}
       >
-        <!-- Logoja e plotë hyn edhe në 375px që kur butoni i kontaktit u bë
-             ikonë: 158px logo + tri ikona 44px = 290px nga 343px të lira. -->
+        {/* Logoja e plotë hyn edhe në 375px që kur butoni i kontaktit u bë
+             ikonë: 158px logo + tri ikona 44px = 290px nga 343px të lira. */}
         <img
           src="/logo-lockup.png"
           alt={site.brandName}
@@ -86,7 +86,7 @@ const isActive = (href: string) => {
         />
       </a>
 
-      <!-- Kërkimi në desktop: në mes, ku e kërkon syri. -->
+      {/* Kërkimi në desktop: në mes, ku e kërkon syri. */}
       <div class="hidden min-w-0 flex-1 lg:block">
         <div class="mx-auto max-w-md">
           <Search id="search-desktop" lang={lang} />
@@ -111,9 +111,9 @@ const isActive = (href: string) => {
       </nav>
 
       <div class="ml-auto flex items-center gap-1 lg:ml-0">
-        <!-- Vetëm ikonë: teksti hante gjerësi që i duhej logos. Emri i plotë
+        {/* Vetëm ikonë: teksti hante gjerësi që i duhej logos. Emri i plotë
              mbetet te `aria-label` për lexuesit e ekranit, dhe numri i plotë
-             rri te shiriti i sipërm, te menuja dhe te footer-i. -->
+             rri te shiriti i sipërm, te menuja dhe te footer-i. */}
         <a
           href={tel}
           class="grid h-11 w-11 place-items-center rounded-full bg-forest-900 text-white transition-colors hover:bg-forest-700 lg:hidden"
@@ -141,14 +141,14 @@ const isActive = (href: string) => {
       </div>
     </div>
 
-    <!-- Kërkimi në telefon: gjithmonë i dukshëm, jo i fshehur pas një ikone. -->
+    {/* Kërkimi në telefon: gjithmonë i dukshëm, jo i fshehur pas një ikone. */}
     <div class="pb-3 lg:hidden">
       <Search id="search-mobile" lang={lang} />
     </div>
   </div>
 </header>
 
-<!-- Paneli i navigimit në telefon -->
+{/* Paneli i navigimit në telefon */}
 <div id="mobile-nav" data-nav-panel hidden class="fixed inset-0 z-50 lg:hidden">
   <div data-nav-backdrop class="absolute inset-0 bg-forest-950/60"></div>
 
