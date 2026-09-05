@@ -5,7 +5,7 @@ price: 580
 oldPrice: null
 category: kujdesi-ndaj-bebes
 brand: ''
-image: /foto/WhatsApp Image 2026-09-05 at 12.46.29 AM.jpeg
+image: /foto/Screenshot 2026-09-05 175156.png
 desc_sq: Pa vaj palme, pa sheqer te shtuar, me 11 vitamina, kalcium dhe fosfor.
 desc_en: Palm oil-free, with no added sugar, enriched with 11 vitamins, calcium, and phosphorus.
 inStock: true
