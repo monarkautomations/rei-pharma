@@ -140,13 +140,30 @@ JSON-LD. `catalog.ts` e ndërton `product.gallery`: kryesorja e para, pastaj
 shtesat që ekzistojnë vërtet te `public/`, pa përsëritje. Me një foto të vetme,
 miniaturat nuk shfaqen fare.
 
-**Zmadhimi** bëhet me `<dialog>` dhe `showModal()`. Shfletuesi jep vetë sfondin
-e errët, mbylljen me Escape dhe kthimin e fokusit — asnjë bibliotekë.
+**Zmadhimi sillet ndryshe sipas pajisjes**, sepse edhe pritshmëria është tjetër:
 
-**Filtri i çmimit** (`PriceFilter.astro`) punon mbi kartat që janë tashmë në
-HTML: fsheh e shfaq, nuk kërkon gjë nga serveri dhe nuk e prek adresën. Numrat
-llogariten në build nga produktet e asaj faqeje, ndaj përshtaten vetë kur
-klienti shton produkte. Kovat bosh nuk shfaqen.
+- **me mi** — fotoja rritet dy herë dhe ndjek kursorin, si te dyqanet e mëdha.
+  Nuk hapet asgjë; lëviz miun dhe sheh detajin.
+- **me prekje** — hapet e plota mbi sfond të errët, kurrë e prerë. Zmadhimi që
+  ndjek gishtin s'ka kuptim kur gishti e mbulon vetë foton.
+
+Dallimi bëhet me `(hover: hover) and (pointer: fine)`, **jo me gjerësinë e
+ekranit**: një laptop me ekran të vogël ka mi, një tablet i madh jo.
+
+Dritarja është `<dialog>` me `showModal()`. Shfletuesi jep vetë sfondin e
+errët, mbylljen me Escape dhe kthimin e fokusit. `<dialog>` ka `max-width` dhe
+`max-height` të vetat (rreth 90%) që e ngushtonin foton — prandaj vihen 100%
+me dorë.
+
+**Filtri i çmimit** (`PriceFilter.astro`) është `<select>` i vërtetë, jo butona
+dhe jo menu e ndërtuar me div-a. Pesë intervale bashkë me filtrat e kategorive
+do të bënin dy rreshta butonash në telefon; kështu zë një rresht. Dhe `<select>`
+hap zgjedhësin e vetë sistemit në telefon, punon me tastierë dhe me lexues
+ekrani pa i shkruar ne ato sjellje.
+
+Punon mbi kartat që janë tashmë në HTML: fsheh e shfaq, nuk kërkon gjë nga
+serveri dhe nuk e prek adresën. Numrat llogariten në build nga produktet e asaj
+faqeje, ndaj përshtaten vetë kur klienti shton produkte. Kovat bosh nuk shfaqen.
 
 Intervalet te `priceBuckets` në `site.ts` nuk janë të rastit — shih komentin
 aty. Ndarja standarde 1000/2000/3000/5000 do të fuste 58% të katalogut nën një

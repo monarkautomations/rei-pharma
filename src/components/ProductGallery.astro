@@ -7,8 +7,19 @@
  * gjitha (kryesoren të madhe, të tjerat si miniatura). Skripti shton vetëm
  * ndërrimin me klikim dhe dritaren e zmadhimit — të dyja zbukurime, jo kushte.
  *
- * Zmadhimi bëhet me `<dialog>`, jo me një ishull React: nuk ka gjendje për të
- * mbajtur, dhe shfletuesi e jep vetë mbylljen me Escape dhe sfondin e errët.
+ * Zmadhimi sillet ndryshe sipas pajisjes, sepse edhe pritshmëria është tjetër:
+ *
+ *   me mi   — fotoja zmadhohet aty ku rri kursori, si te dyqanet e mëdha.
+ *             Nuk hapet asgjë; lëviz miun dhe sheh detajin.
+ *   me prekje — hapet e plota mbi sfond të errët. Zmadhimi që ndjek gishtin
+ *             nuk ka kuptim kur gishti e mbulon vetë foton; atje vlera është
+ *             ta shohësh të tërën, jo një copë.
+ *
+ * Dallimi bëhet me `(hover: hover) and (pointer: fine)`, jo me gjerësinë e
+ * ekranit: një laptop me ekran të vogël ka mi, dhe një tablet i madh jo.
+ *
+ * Dritarja është `<dialog>`, jo ishull React: nuk ka gjendje për të mbajtur,
+ * dhe shfletuesi e jep vetë mbylljen me Escape dhe kthimin e fokusit.
  */
 import { PRODUCT_PLACEHOLDER } from '../config/site';
 import { t, type Lang } from '../lib/i18n';
@@ -49,7 +60,7 @@ const kaGaleri = images.length > 1;
     <button
       type="button"
       data-zoom
-      class="block w-full cursor-zoom-in"
+      class="block w-full overflow-hidden cursor-zoom-in"
       aria-label={`${t(lang, 'zoomPhoto')} — ${name}`}
     >
       <img
@@ -61,7 +72,7 @@ const kaGaleri = images.length > 1;
         decoding="async"
         data-main
         class:list={[
-          'aspect-square w-full object-contain transition-transform duration-300',
+          'aspect-square w-full object-contain',
           isPlaceholder ? 'p-10' : 'p-8',
         ]}
       />
@@ -111,15 +122,23 @@ const kaGaleri = images.length > 1;
 
 {/*
   Dritarja e zmadhimit. Rri bosh derisa të hapet; `<dialog>` e mban të
-  padukshme vetë, pa CSS shtesë dhe pa JavaScript.
+  padukshme vetë, pa CSS shtesë dhe pa JavaScript. `<dialog>` ka `max-width`/`max-height` të vetat te
+  shfletuesi (rreth 90%), dhe ato e ngushtonin foton; prandaj vihen 100% me
+  dorë. Fotoja del **e plotë**, e vendosur brenda ekranit me `object-contain` —
+  kurrë e prerë, sepse pikërisht kjo është arsyeja pse dikush e hap.
 */}
 <dialog
   data-lightbox
-  class="max-h-[100dvh] max-w-[100vw] bg-transparent backdrop:bg-forest-950/90"
+  class="m-0 h-[100dvh] max-h-[100dvh] w-screen max-w-screen bg-forest-950/95 p-0 backdrop:bg-forest-950/95"
   aria-label={name}
 >
-  <div class="relative flex h-[100dvh] w-[100vw] items-center justify-center p-4">
-    <img data-lightbox-img src="" alt={name} class="max-h-full max-w-full object-contain" />
+  <div class="relative flex h-full w-full items-center justify-center p-4">
+    <img
+      data-lightbox-img
+      src=""
+      alt={name}
+      class="max-h-full max-w-full object-contain"
+    />
 
     <button
       type="button"
@@ -163,9 +182,42 @@ const kaGaleri = images.length > 1;
       });
     }
 
+    const butoniZmadhimit = document.querySelector<HTMLElement>('[data-zoom]');
+
+    /**
+     * Me mi: fotoja rritet dy herë dhe ndjek kursorin.
+     *
+     * `transform-origin` vihet te pika ku rri kursori, ndaj ajo pikë mbetet në
+     * vend ndërsa pjesa tjetër zgjerohet — përshtypja është e një xhami zmadhues.
+     * Butoni ka `overflow-hidden`, ndaj ajo që del jashtë kornizës pritet.
+     *
+     * Pa tranzicion me qëllim: një `transition` e bën të ngecur pas kursorit.
+     */
+    const meMi = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+    if (butoniZmadhimit && meMi.matches) {
+      butoniZmadhimit.addEventListener('mousemove', (e) => {
+        const r = butoniZmadhimit.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width) * 100;
+        const y = ((e.clientY - r.top) / r.height) * 100;
+        kryesorja.style.transformOrigin = `${x}% ${y}%`;
+        kryesorja.style.transform = 'scale(2)';
+      });
+
+      butoniZmadhimit.addEventListener('mouseleave', () => {
+        kryesorja.style.transform = '';
+        kryesorja.style.transformOrigin = '';
+      });
+    }
+
+    // Klikimi hap gjithmonë foton e plotë — edhe me mi, sepse xhami zmadhues
+    // tregon një copë, ndërsa dikush mund ta dojë të tërën.
     // `showModal` e mbyll vetë faqen prapa dhe e kthen fokusin kur mbyllet.
-    document.querySelector('[data-zoom]')?.addEventListener('click', () => {
+    butoniZmadhimit?.addEventListener('click', () => {
       fotoZmadhuar.src = kryesorja.currentSrc || kryesorja.src;
+      // Zmadhimi me mi hiqet, që fotoja të mos mbetet e rritur prapa dritares.
+      kryesorja.style.transform = '';
+      kryesorja.style.transformOrigin = '';
       dritarja.showModal();
     });
 
