@@ -130,7 +130,14 @@ function toProduct(entry: CollectionEntry<'products'>, lang: Lang): Product {
 
   // Kryesorja e para, pastaj shtesat që ekzistojnë vërtet. Placeholder-i nuk
   // hyn si foto shtesë: një galeri me vizatimin gri brenda s'ka kuptim.
-  const gallery = [...new Set([image, ...d.images.map((f) => fotoEVlefshme(f, entry.id))])]
+  //
+  // `?? []` nuk është kujdes i tepërt. Të dhënat mund të vijnë nga cache-i i
+  // përmbajtjes së një ndërtimi më të vjetër, i nxjerrë me një skemë që s'e
+  // njihte këtë fushë — dhe atëherë ajo mungon, sado e sigurt ta bëjë skema.
+  // Ndodhi më 6 shtator: `d.images.map` rrëzoi build-in te Cloudflare, ndërsa
+  // lokalisht kalonte. `scripts/clean-content-cache.mjs` e heq shkakun; kjo
+  // rreshtë siguron që edhe po u kthye, faqja të dalë në vend të ndalimit.
+  const gallery = [...new Set([image, ...(d.images ?? []).map((f) => fotoEVlefshme(f, entry.id))])]
     .filter((f, i) => i === 0 || f !== PRODUCT_PLACEHOLDER);
 
   return {
