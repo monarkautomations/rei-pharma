@@ -130,6 +130,32 @@ qëllim: nëse fshihet një kategori që ka produkte brenda, build-i vazhdon,
 produktet mbeten te `/produktet` dhe del njoftim në terminal. Shih
 `getOrphanProducts()`.
 
+## Fotot e shumta, zmadhimi, filtri i çmimit
+
+Tri kërkesa të klientit, shtator 2026. Të treta pa React — rregulli 3.
+
+**Galeria** (`ProductGallery.astro`). Fusha `images` te CMS-ja mban foto shtesë;
+`image` mbetet kryesorja dhe vetëm ajo del te kartat, shporta, kërkimi dhe
+JSON-LD. `catalog.ts` e ndërton `product.gallery`: kryesorja e para, pastaj
+shtesat që ekzistojnë vërtet te `public/`, pa përsëritje. Me një foto të vetme,
+miniaturat nuk shfaqen fare.
+
+**Zmadhimi** bëhet me `<dialog>` dhe `showModal()`. Shfletuesi jep vetë sfondin
+e errët, mbylljen me Escape dhe kthimin e fokusit — asnjë bibliotekë.
+
+**Filtri i çmimit** (`PriceFilter.astro`) punon mbi kartat që janë tashmë në
+HTML: fsheh e shfaq, nuk kërkon gjë nga serveri dhe nuk e prek adresën. Numrat
+llogariten në build nga produktet e asaj faqeje, ndaj përshtaten vetë kur
+klienti shton produkte. Kovat bosh nuk shfaqen.
+
+Intervalet te `priceBuckets` në `site.ts` nuk janë të rastit — shih komentin
+aty. Ndarja standarde 1000/2000/3000/5000 do të fuste 58% të katalogut nën një
+filtër të vetëm; kjo e tanishmja e mban maksimumin te 33%. Nëse katalogu
+zhvendoset, rimat shpërndarjen para se t'i ndryshosh.
+
+Të tria rrinë të fshehura pa JavaScript në mënyrë që të mos dalin butona që nuk
+bëjnë asgjë; përmbajtja — fotot dhe produktet — është gjithmonë në HTML.
+
 ## Adresat e produkteve
 
 Adresa vjen nga emri i file-it te `src/content/products/`, i cili vendoset kur

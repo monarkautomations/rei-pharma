@@ -73,6 +73,14 @@ export type Product = {
   category: string;
   brand?: string;
   image: string;
+  /**
+   * Të gjitha fotot e produktit, kryesorja e para.
+   *
+   * Ndërtohet këtu që faqja të mos merret me pastrimin: çdo foto është
+   * verifikuar se ekziston te `public/`, pa përsëritje. Kur produkti ka vetëm
+   * një foto, ka gjatësi 1 — dhe faqja nuk e shfaq galerinë fare.
+   */
+  gallery: string[];
   inStock: boolean;
   featured: boolean;
   order: number;
@@ -118,6 +126,13 @@ function toProduct(entry: CollectionEntry<'products'>, lang: Lang): Product {
     oldPrice = undefined;
   }
 
+  const image = fotoEVlefshme(d.image, entry.id);
+
+  // Kryesorja e para, pastaj shtesat që ekzistojnë vërtet. Placeholder-i nuk
+  // hyn si foto shtesë: një galeri me vizatimin gri brenda s'ka kuptim.
+  const gallery = [...new Set([image, ...d.images.map((f) => fotoEVlefshme(f, entry.id))])]
+    .filter((f, i) => i === 0 || f !== PRODUCT_PLACEHOLDER);
+
   return {
     slug: entry.id,
     name,
@@ -126,7 +141,8 @@ function toProduct(entry: CollectionEntry<'products'>, lang: Lang): Product {
     oldPrice,
     category: d.category,
     brand: d.brand,
-    image: fotoEVlefshme(d.image, entry.id),
+    image,
+    gallery,
     inStock: d.inStock,
     featured: d.featured,
     order: d.order,

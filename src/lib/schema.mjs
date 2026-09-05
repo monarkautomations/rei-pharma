@@ -108,6 +108,25 @@ export const categorySchema = z.object({
   order: cmsDefault(z.number(), 99),
 });
 
+/**
+ * Listë fotosh nga CMS-ja.
+ *
+ * Widget-i `list` i Sveltia-s shkruan varg fotosh, po kur klienti e lë bosh
+ * shkruan `null`, dhe kur fshin një rresht mund të mbetet `""` brenda. Këtu
+ * pastrohet: mbeten vetëm tekste jo-bosh, pa përsëritje, dhe jo më shumë se
+ * MAX_IMAGES — një produkt me tridhjetë foto do të bënte një faqe të rëndë
+ * pa i shërbyer askujt.
+ */
+const MAX_IMAGES = 8;
+
+const cmsImages = z.preprocess((v) => {
+  if (!Array.isArray(v)) return [];
+  const pastruar = v
+    .map((x) => (typeof x === 'string' ? x.trim() : ''))
+    .filter((x) => x.length > 0);
+  return [...new Set(pastruar)].slice(0, MAX_IMAGES);
+}, z.array(z.string()).catch([]));
+
 export const productSchema = z.object({
   name_sq: cmsText,
   name_en: cmsText,
@@ -122,6 +141,9 @@ export const productSchema = z.object({
   category: cmsText,
   brand: cmsOptional(z.string()),
   image: cmsDefault(z.string(), PRODUCT_PLACEHOLDER),
+  // Foto shtesë për galerinë te faqja e produktit. `image` mbetet kryesorja:
+  // ajo del te kartat, te shporta, te kërkimi dhe te JSON-LD.
+  images: cmsImages,
   desc_sq: cmsText,
   desc_en: cmsText,
   inStock: cmsBoolean(true),

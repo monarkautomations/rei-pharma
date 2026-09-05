@@ -117,3 +117,30 @@ export function formatPrice(lek: number) {
  * skemës, i cili nuk mund të importojë nga këtu pa tërhequr Astro-n.
  */
 export { PRODUCT_PLACEHOLDER } from '../lib/schema.mjs';
+
+/**
+ * Intervalet e filtrit të çmimit te /produktet dhe te faqja e kategorisë.
+ *
+ * Numrat nuk janë të rastit. U mat shpërndarja reale e katalogut (33 produkte,
+ * 580–5560 L, mesorja 1800) kundrejt tri ndarjeve të mundshme:
+ *
+ *   fikse 1000/2000/3000/5000   ->  2 / 19 / 4 / 7 / 1   (58% në një kovë)
+ *   kjo e tanishmja             ->  2 / 8 / 11 / 4 / 8   (max 33%)
+ *
+ * Ndarja e parë është ajo që përdorin dyqanet e mëdha, por për një katalog
+ * farmacie ku shumica e produkteve rrinë mes 1000 dhe 2000 lekësh, ajo do të
+ * fuste më shumë se gjysmën e produkteve nën një filtër të vetëm — pra nuk do
+ * të filtronte asgjë.
+ *
+ * Kovat bosh nuk shfaqen fare; numrat llogariten në build nga produktet e asaj
+ * faqeje, ndaj kur klienti shton produkte, filtri përshtatet vetë. Nëse dikur
+ * katalogu zhvendoset (p.sh. shtohen shumë produkte mbi 5000 L), rimat
+ * shpërndarjen dhe ndrysho këto numra.
+ */
+export const priceBuckets: Array<{ min?: number; max?: number }> = [
+  { max: 1000 },
+  { min: 1000, max: 1500 },
+  { min: 1500, max: 2000 },
+  { min: 2000, max: 3000 },
+  { min: 3000 },
+];

@@ -165,6 +165,24 @@ const dictionary = {
   added: { sq: 'Shtuar në shportë', en: 'Added to cart' },
   view: { sq: 'Shiko', en: 'View' },
   outOfStock: { sq: 'Jashtë stoku', en: 'Out of stock' },
+
+  // Galeria e fotove te faqja e produktit
+  zoomPhoto: { sq: 'Shiko foton e zmadhuar', en: 'View larger photo' },
+  closePhoto: { sq: 'Mbyll', en: 'Close' },
+  photoOf: { sq: 'Foto', en: 'Photo' },
+  nextPhoto: { sq: 'Fotoja tjetër', en: 'Next photo' },
+  prevPhoto: { sq: 'Fotoja e mëparshme', en: 'Previous photo' },
+
+  // Filtri i çmimit
+  filterByPrice: { sq: 'Filtro sipas çmimit', en: 'Filter by price' },
+  priceAll: { sq: 'Çdo çmim', en: 'Any price' },
+  priceUnder: { sq: 'Deri në', en: 'Under' },
+  priceOver: { sq: 'Mbi', en: 'Over' },
+  noMatches: {
+    sq: 'Asnjë produkt në këtë interval çmimi.',
+    en: 'No products in this price range.',
+  },
+  clearFilter: { sq: 'Hiqe filtrin', en: 'Clear filter' },
   inStock: { sq: 'Në gjendje', en: 'In stock' },
   onSale: { sq: 'Ofertë', en: 'Sale' },
   allProducts: { sq: 'Të gjitha', en: 'All' },

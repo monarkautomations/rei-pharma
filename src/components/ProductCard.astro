@@ -64,18 +64,23 @@ const schema = {
 ---
 
 {/*
-  E gjithë karta klikohet, por lidhja e vërtetë rri vetëm te titulli dhe
-  zgjerohet mbi kartën me `after:absolute`. Butoni i shportës ngrihet mbi të me
-  `relative z-10`, që klikimi mbi "Shto në shportë" të mos hapë faqen.
-*/}
-{/*
-  `h-full` që karta të mbushë rreshtin e grid-it edhe kur është e mbështjellë.
-  Te kryefaqja çdo kartë rri brenda një `<div data-reveal>` për animacionin:
-  grid-i e zgjat atë div-in, po karta brenda merrte lartësinë e vet, dhe dy
-  kartat pranë e pranë dilnin të pabarabarta. Te /produktet nuk dukej, sepse
-  atje karta është fëmijë i drejtpërdrejtë i grid-it.
+  Tri gjëra që duken të vogla po nuk janë:
+
+  1. E gjithë karta klikohet, por lidhja e vërtetë rri vetëm te titulli dhe
+     zgjerohet mbi kartën me `after:absolute`. Butoni i shportës ngrihet mbi të
+     me `relative z-10`, që klikimi mbi të të mos hapë faqen e produktit.
+
+  2. `h-full` që karta të mbushë rreshtin e grid-it edhe kur është e
+     mbështjellë. Te kryefaqja çdo kartë rri brenda një `<div data-reveal>` për
+     animacionin: grid-i e zgjat atë div-in, po karta brenda merrte lartësinë e
+     vet, dhe dy kartat pranë e pranë dilnin të pabarabarta.
+
+  3. `data-price` e mban çmimin si numër për filtrin e çmimit. Pa të, filtri do
+     ta nxirrte nga teksti i shfaqur — që ka simbolin "L" dhe ndarës mijëshesh,
+     dhe do të prishej me çdo ndryshim formatimi.
 */}
 <article
+  data-price={price}
   class="group relative flex h-full flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4"
 >
   {/*

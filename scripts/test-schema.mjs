@@ -78,6 +78,41 @@ duhetTeKaloje('vetëm fushat e detyrueshme',
   productSchema, produktBaze, { image: PLACEHOLDER, order: 99, inStock: true });
 
 rresht();
+console.log('Produktet — fotot shtesë (widget-i list i CMS-së):');
+// Widget-i `list` shkruan `null` kur lihet bosh dhe mund të lërë rreshta bosh
+// brenda kur klienti fshin një foto.
+const njesoj = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+function fotoShtese(emri, hyrje, pritur) {
+  const r = productSchema.safeParse({ ...produktBaze, images: hyrje });
+  if (!r.success) {
+    deshtime++;
+    console.error(`  x ${emri} — skema dështoi`);
+    return;
+  }
+  if (!njesoj(r.data.images, pritur)) {
+    deshtime++;
+    console.error(`  x ${emri}`);
+    console.error(`      prisja ${JSON.stringify(pritur)}, mora ${JSON.stringify(r.data.images)}`);
+    return;
+  }
+  console.log(`  ok ${emri}`);
+}
+
+fotoShtese('mungon → listë bosh', undefined, []);
+fotoShtese('null → listë bosh', null, []);
+fotoShtese('listë bosh mbetet bosh', [], []);
+fotoShtese('tekst në vend të listës → bosh', '/foto/a.jpg', []);
+fotoShtese('rreshta bosh hiqen', ['/foto/a.jpg', '', '   ', '/foto/b.jpg'], ['/foto/a.jpg', '/foto/b.jpg']);
+fotoShtese('përsëritjet hiqen', ['/foto/a.jpg', '/foto/a.jpg'], ['/foto/a.jpg']);
+fotoShtese('hapësirat anash priten', ['  /foto/a.jpg  '], ['/foto/a.jpg']);
+fotoShtese('numra brenda listës hiqen', ['/foto/a.jpg', 123, null], ['/foto/a.jpg']);
+fotoShtese(
+  'më shumë se 8 priten te 8',
+  Array.from({ length: 12 }, (_, i) => `/foto/${i}.jpg`),
+  Array.from({ length: 8 }, (_, i) => `/foto/${i}.jpg`),
+);
+
+rresht();
 console.log('Produktet — vlera të papërdorshme bëhen 0, build-i nuk ndalet:');
 duhetTeKaloje('pa çmim → 0', productSchema, { ...produktBaze, price: undefined }, { price: 0 });
 duhetTeKaloje('çmim negativ → 0', productSchema, { ...produktBaze, price: -5 }, { price: 0 });

@@ -1,0 +1,163 @@
+---
+/**
+ * Filtri i çmimit për listat e produkteve.
+ *
+ * Punon mbi kartat që janë tashmë në HTML: nuk kërkon asgjë nga serveri dhe
+ * nuk e ndryshon adresën. Rregulli 1 i projektit kërkon që përmbajtja të
+ * lexohet pa JavaScript — dhe ashtu është: pa skript, filtri nuk shfaqet fare
+ * dhe të gjitha produktet mbeten të dukshme.
+ *
+ * Numrat pranë çdo intervali llogariten këtu, në build, nga produktet e asaj
+ * faqeje. Kovat pa asnjë produkt nuk shfaqen: një filtër që jep zero rezultate
+ * vetëm zë vend.
+ */
+import { formatPrice, priceBuckets } from '../config/site';
+import { t, type Lang } from '../lib/i18n';
+
+interface Props {
+  /** Çmimet e produkteve që ndodhen te kjo faqe. */
+  prices: number[];
+  lang: Lang;
+}
+
+const { prices, lang } = Astro.props;
+
+const brenda = (cmimi: number, min?: number, max?: number) =>
+  (min === undefined || cmimi >= min) && (max === undefined || cmimi < max);
+
+const kovat = priceBuckets
+  .map(({ min, max }) => ({
+    min,
+    max,
+    count: prices.filter((c) => brenda(c, min, max)).length,
+    // Njësia një herë, në fund: "1000 – 1500 L", jo "1000 L – 1500 L".
+    label:
+      min === undefined
+        ? `${t(lang, 'priceUnder')} ${formatPrice(max!)}`
+        : max === undefined
+          ? `${t(lang, 'priceOver')} ${formatPrice(min)}`
+          : `${formatPrice(min).replace(/\s*L$/, '')} – ${formatPrice(max)}`,
+  }))
+  .filter((k) => k.count > 0);
+
+// Me një kovë të vetme s'ka çfarë të filtrosh: të gjitha produktet janë brenda
+// saj, dhe filtri do të ishte një buton që nuk bën asgjë.
+const vlen = kovat.length > 1;
+---
+
+{
+  vlen && (
+    <nav
+      class="mt-4 flex flex-wrap gap-2"
+      aria-label={t(lang, 'filterByPrice')}
+      data-price-filter
+      hidden
+    >
+      <button
+        type="button"
+        data-price-all
+        aria-pressed="true"
+        class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500 aria-pressed:border-forest-900 aria-pressed:bg-forest-900 aria-pressed:text-white"
+      >
+        {t(lang, 'priceAll')}
+      </button>
+
+      {kovat.map((k) => (
+        <button
+          type="button"
+          data-min={k.min ?? ''}
+          data-max={k.max ?? ''}
+          aria-pressed="false"
+          class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500 aria-pressed:border-forest-900 aria-pressed:bg-forest-900 aria-pressed:text-white"
+        >
+          {k.label}
+          <span class="ml-2 text-[13px] text-slate aria-pressed:text-white/70">
+            {k.count}
+          </span>
+        </button>
+      ))}
+    </nav>
+  )
+}
+
+{
+  vlen && (
+    <p
+      class="mt-8 text-[16px] text-graphite"
+      data-price-empty
+      hidden
+    >
+      {t(lang, 'noMatches')}{' '}
+      <button
+        type="button"
+        data-price-clear
+        class="text-gold-600 underline underline-offset-2 hover:text-forest-900"
+      >
+        {t(lang, 'clearFilter')}
+      </button>
+    </p>
+  )
+}
+
+<script>
+  /**
+   * Fsheh e shfaq kartat sipas çmimit.
+   *
+   * Filtri rri me `hidden` te HTML-ja dhe hapet vetëm këtu. Ashtu, nëse ky
+   * skript nuk niset, vizitori nuk sheh butona që nuk bëjnë asgjë — sheh
+   * thjesht të gjitha produktet, që është gjendja e saktë.
+   */
+  const filtri = document.querySelector<HTMLElement>('[data-price-filter]');
+  const kartat = Array.from(document.querySelectorAll<HTMLElement>('article[data-price]'));
+
+  if (filtri && kartat.length > 0) {
+    const bosh = document.querySelector<HTMLElement>('[data-price-empty]');
+    const numeruesi = document.querySelector<HTMLElement>('[data-product-count]');
+    const butonat = Array.from(filtri.querySelectorAll<HTMLButtonElement>('button'));
+
+    filtri.hidden = false;
+
+    /** Teksti "N produkte të disponueshme" ndjek filtrin. */
+    const rifreskoNumrin = (n: number) => {
+      if (!numeruesi) return;
+      const njejes = numeruesi.dataset.one ?? '';
+      const shumes = numeruesi.dataset.many ?? '';
+      numeruesi.textContent = `${n} ${n === 1 ? njejes : shumes}`;
+    };
+
+    const filtro = (min: number | null, max: number | null) => {
+      let dukshme = 0;
+      for (const karta of kartat) {
+        const cmimi = Number(karta.dataset.price);
+        const brenda =
+          (min === null || cmimi >= min) && (max === null || cmimi < max);
+        // Fshihet vetë karta, jo mbështjellësi: te disa faqe karta rri brenda
+        // një div-i që mban animacionin, dhe grid-i do të linte vend bosh.
+        karta.style.display = brenda ? '' : 'none';
+        if (brenda) dukshme++;
+      }
+      if (bosh) bosh.hidden = dukshme > 0;
+      rifreskoNumrin(dukshme);
+    };
+
+    for (const b of butonat) {
+      b.addEventListener('click', () => {
+        for (const tjetri of butonat) {
+          tjetri.setAttribute('aria-pressed', String(tjetri === b));
+        }
+        if (b.hasAttribute('data-price-all')) {
+          filtro(null, null);
+          return;
+        }
+        filtro(
+          b.dataset.min ? Number(b.dataset.min) : null,
+          b.dataset.max ? Number(b.dataset.max) : null,
+        );
+      });
+    }
+
+    document.querySelector('[data-price-clear]')?.addEventListener('click', () => {
+      butonat[0]?.click();
+    });
+  }
+</script>

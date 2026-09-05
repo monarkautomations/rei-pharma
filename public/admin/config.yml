@@ -101,7 +101,13 @@ collections:
         widget: "image"
         required: false
         default: "/produkt-placeholder.svg"
-        hint: "Pa foto, del vizatimi gri i përkohshëm."
+        hint: "Fotoja kryesore. Kjo del te lista e produkteve. Sfondi i bardhë."
+      - label: "Foto shtesë (opsionale)"
+        name: "images"
+        widget: "list"
+        required: false
+        field: { label: "Foto", name: "image", widget: "image" }
+        hint: "Dalin te faqja e produktit, poshtë kryesores. Deri në 8."
       - { label: "Përshkrimi (shqip)", name: "desc_sq", widget: "text", required: true }
       - { label: "Përshkrimi (anglisht)", name: "desc_en", widget: "text", required: true }
       - { label: "Në gjendje?", name: "inStock", widget: "boolean", default: true }

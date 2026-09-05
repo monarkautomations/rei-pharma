@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
+import PriceFilter from '../PriceFilter.astro';
 import {
   getProducts,
   getCategoriesWithProducts,
@@ -43,7 +44,17 @@ const meta = {
 >
   <section class="mx-auto max-w-[1200px] px-4 py-10 sm:py-14">
     <h1 class="text-[30px] sm:text-[40px]">{t(lang, 'productsTitle')}</h1>
-    <p class="mt-2 text-[16px] text-graphite">
+    {/*
+      `data-product-count` e lejon filtrin e çmimit ta rifreskojë numrin.
+      Fjala rri te `data-*`, jo e ngurtë te skripti, që përkthimi të mbetet i
+      vetëm te i18n.
+    */}
+    <p
+      class="mt-2 text-[16px] text-graphite"
+      data-product-count
+      data-one={t(lang, 'productsAvailable')}
+      data-many={t(lang, 'productsAvailable')}
+    >
       {all.length} {t(lang, 'productsAvailable')}
     </p>
 
@@ -65,6 +76,8 @@ const meta = {
         </nav>
       )
     }
+
+    <PriceFilter prices={all.map((p) => p.price)} lang={lang} />
 
     <div class="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
       {

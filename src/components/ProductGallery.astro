@@ -1,0 +1,183 @@
+---
+/**
+ * Fotot e produktit: kryesorja, miniaturat, dhe zmadhimi me klikim.
+ *
+ * Rregulli 1 i projektit kërkon që përmbajtja të lexohet pa JavaScript. Ndaj
+ * të gjitha fotot janë në HTML që në fillim: pa skript, vizitori i sheh të
+ * gjitha (kryesoren të madhe, të tjerat si miniatura). Skripti shton vetëm
+ * ndërrimin me klikim dhe dritaren e zmadhimit — të dyja zbukurime, jo kushte.
+ *
+ * Zmadhimi bëhet me `<dialog>`, jo me një ishull React: nuk ka gjendje për të
+ * mbajtur, dhe shfletuesi e jep vetë mbylljen me Escape dhe sfondin e errët.
+ */
+import { PRODUCT_PLACEHOLDER } from '../config/site';
+import { t, type Lang } from '../lib/i18n';
+
+interface Props {
+  /** Kryesorja e para. Vjen e pastruar nga `catalog.ts`. */
+  images: string[];
+  name: string;
+  lang: Lang;
+  /** Zbritja në përqindje, nëse produkti është në ofertë dhe në gjendje. */
+  discount?: number | null;
+}
+
+const { images, name, lang, discount } = Astro.props;
+
+const kryesorja = images[0] ?? PRODUCT_PLACEHOLDER;
+const isPlaceholder = kryesorja === PRODUCT_PLACEHOLDER;
+const kaGaleri = images.length > 1;
+---
+
+<div class="flex flex-col gap-3">
+  {/*
+    Korniza e bardhë te fotot reale, bezh te placeholder-i — shih shënimin te
+    ProductCard.astro. Kutia mban `id` që skripti ta gjejë pa e kërkuar me
+    klasa, të cilat Tailwind-i mund t'i ndryshojë.
+  */}
+  <div
+    class:list={[
+      'relative overflow-hidden rounded-[14px]',
+      isPlaceholder ? 'bg-bone' : 'bg-white',
+    ]}
+    data-gallery
+  >
+    {/*
+      Butoni mbulon foton që zmadhimi të ketë zonë prekjeje sa e gjithë fotoja.
+      Pa skript mbetet buton që nuk bën gjë — fotoja brenda duket njësoj.
+    */}
+    <button
+      type="button"
+      data-zoom
+      class="block w-full cursor-zoom-in"
+      aria-label={`${t(lang, 'zoomPhoto')} — ${name}`}
+    >
+      <img
+        src={kryesorja}
+        alt={name}
+        width="900"
+        height="900"
+        fetchpriority="high"
+        decoding="async"
+        data-main
+        class:list={[
+          'aspect-square w-full object-contain transition-transform duration-300',
+          isPlaceholder ? 'p-10' : 'p-8',
+        ]}
+      />
+    </button>
+
+    {
+      discount && (
+        <span class="pointer-events-none absolute top-4 left-4 rounded-full bg-gold-50 px-3 py-1.5 text-[13px] font-medium text-gold-600">
+          −{discount}%
+        </span>
+      )
+    }
+  </div>
+
+  {
+    kaGaleri && (
+      <ul class="flex flex-wrap gap-2" data-thumbs>
+        {images.map((foto, i) => (
+          <li>
+            {/*
+              64px, mbi kufirin 44px të rregullit 5. `aria-current` tregon cila
+              është e zgjedhura; skripti e lëviz, CSS-ja e ngjyros.
+            */}
+            <button
+              type="button"
+              data-thumb={foto}
+              aria-current={i === 0 ? 'true' : 'false'}
+              aria-label={`${t(lang, 'photoOf')} ${i + 1}`}
+              class="block h-16 w-16 overflow-hidden rounded-md border-2 border-mist bg-white p-1 transition-colors hover:border-gold-500 aria-[current=true]:border-forest-900"
+            >
+              <img
+                src={foto}
+                alt=""
+                width="64"
+                height="64"
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-contain"
+              />
+            </button>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</div>
+
+{/*
+  Dritarja e zmadhimit. Rri bosh derisa të hapet; `<dialog>` e mban të
+  padukshme vetë, pa CSS shtesë dhe pa JavaScript.
+*/}
+<dialog
+  data-lightbox
+  class="max-h-[100dvh] max-w-[100vw] bg-transparent backdrop:bg-forest-950/90"
+  aria-label={name}
+>
+  <div class="relative flex h-[100dvh] w-[100vw] items-center justify-center p-4">
+    <img data-lightbox-img src="" alt={name} class="max-h-full max-w-full object-contain" />
+
+    <button
+      type="button"
+      data-close
+      aria-label={t(lang, 'closePhoto')}
+      class="absolute top-4 right-4 grid h-11 w-11 place-items-center rounded-full bg-white/95 text-forest-900 transition-colors hover:bg-white"
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+</dialog>
+
+<script>
+  /**
+   * Ndërrimi i fotos dhe zmadhimi.
+   *
+   * Nëse ky skript nuk niset, faqja mbetet e plotë: fotoja kryesore e madhe,
+   * miniaturat poshtë saj, të gjitha të dukshme. Humbet vetëm ndërrimi dhe
+   * dritarja e zmadhimit.
+   */
+  const kutia = document.querySelector<HTMLElement>('[data-gallery]');
+  const kryesorja = document.querySelector<HTMLImageElement>('[data-main]');
+  const dritarja = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  const fotoZmadhuar = document.querySelector<HTMLImageElement>('[data-lightbox-img]');
+
+  if (kutia && kryesorja && dritarja && fotoZmadhuar) {
+    const miniaturat = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-thumb]'),
+    );
+
+    for (const b of miniaturat) {
+      b.addEventListener('click', () => {
+        const foto = b.dataset.thumb;
+        if (!foto || foto === kryesorja.getAttribute('src')) return;
+        kryesorja.src = foto;
+        for (const tjetra of miniaturat) {
+          tjetra.setAttribute('aria-current', String(tjetra === b));
+        }
+      });
+    }
+
+    // `showModal` e mbyll vetë faqen prapa dhe e kthen fokusin kur mbyllet.
+    document.querySelector('[data-zoom]')?.addEventListener('click', () => {
+      fotoZmadhuar.src = kryesorja.currentSrc || kryesorja.src;
+      dritarja.showModal();
+    });
+
+    document.querySelector('[data-close]')?.addEventListener('click', () => {
+      dritarja.close();
+    });
+
+    // Klikimi jashtë fotos mbyll — sjellje që e pret kushdo nga një zmadhim.
+    dritarja.addEventListener('click', (e) => {
+      if (e.target === dritarja || (e.target as HTMLElement).dataset.lightboxImg === undefined) {
+        if (e.target !== fotoZmadhuar) dritarja.close();
+      }
+    });
+  }
+</script>

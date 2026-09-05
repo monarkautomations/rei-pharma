@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
+import PriceFilter from '../PriceFilter.astro';
 import type { Category, Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
 import { pageTitle } from '../../lib/seo';
@@ -73,6 +74,9 @@ const { lang, alternates, category, products, siblings } = Astro.props;
           </a>
         </div>
       ) : (
+        <>
+        <PriceFilter prices={products.map((p) => p.price)} lang={lang} />
+
         <div class="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {products.map((p, i) => (
             <ProductCard
@@ -89,6 +93,7 @@ const { lang, alternates, category, products, siblings } = Astro.props;
             />
           ))}
         </div>
+        </>
       )
     }
   </section>
