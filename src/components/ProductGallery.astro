@@ -122,29 +122,40 @@ const kaGaleri = images.length > 1;
 
 {/*
   Dritarja e zmadhimit. Rri bosh derisa të hapet; `<dialog>` e mban të
-  padukshme vetë, pa CSS shtesë dhe pa JavaScript. `<dialog>` ka `max-width`/`max-height` të vetat te
-  shfletuesi (rreth 90%), dhe ato e ngushtonin foton; prandaj vihen 100% me
-  dorë. Fotoja del **e plotë**, e vendosur brenda ekranit me `object-contain` —
-  kurrë e prerë, sepse pikërisht kjo është arsyeja pse dikush e hap.
+  padukshme vetë, pa CSS shtesë dhe pa JavaScript.
+
+  `<dialog>` ka `max-width`/`max-height` të vetat te shfletuesi (rreth 90%),
+  dhe ato e ngushtonin foton; prandaj vihen 100% me dorë.
+
+  Sfondi është i bardhë, jo i errët, për të njëjtën arsye si korniza e kartave:
+  fotot e produkteve kanë sfond të bardhë, dhe mbi të errët dilnin si drejtkëndësh
+  i bardhë i ngjitur në mes të ekranit. Mbi të bardhë produkti duket sikur noton.
 */}
 <dialog
   data-lightbox
-  class="m-0 h-[100dvh] max-h-[100dvh] w-screen max-w-screen bg-forest-950/95 p-0 backdrop:bg-forest-950/95"
+  class="m-0 h-[100dvh] max-h-[100dvh] w-screen max-w-screen bg-white p-0 backdrop:bg-white"
   aria-label={name}
 >
   <div class="relative flex h-full w-full items-center justify-center p-4">
+    {/*
+      `h-full w-full`, jo `max-h-full max-w-full`.
+      
+      `max-*` vetëm zvogëlon: një foto 299x607 mbetej po aq e vogël në mes të
+      ekranit, dhe zmadhimi nuk zmadhonte asgjë. Kështu fotoja rritet sa të
+      mbushë ekranin, dhe `object-contain` ia ruan raportin — pa u prerë.
+    */}
     <img
       data-lightbox-img
       src=""
       alt={name}
-      class="max-h-full max-w-full object-contain"
+      class="h-full w-full object-contain"
     />
 
     <button
       type="button"
       data-close
       aria-label={t(lang, 'closePhoto')}
-      class="absolute top-4 right-4 grid h-11 w-11 place-items-center rounded-full bg-white/95 text-forest-900 transition-colors hover:bg-white"
+      class="absolute top-4 right-4 grid h-11 w-11 place-items-center rounded-full bg-forest-900 text-white transition-colors hover:bg-forest-700"
     >
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
         <path d="M18 6 6 18M6 6l12 12" />
