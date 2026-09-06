@@ -153,9 +153,13 @@ const schema = {
     rreshti i tretë dilte i prerë përgjysmë. Hapësira e mbetur shtyhet poshtë
     me `mt-auto` te rreshti i çmimit, që çmimet të rreshtohen mes kartave.
   */}
-  <p class="mt-1 line-clamp-2 text-[13px] leading-relaxed text-slate">
-    {desc}
-  </p>
+  {
+    desc && (
+      <p class="mt-1 line-clamp-2 text-[13px] leading-relaxed text-slate">
+        {desc}
+      </p>
+    )
+  }
 
   {/*
     Çmimi majtas, shporta djathtas. Butoni i gjerë me tekst hante gjysmën e

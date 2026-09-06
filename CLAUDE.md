@@ -204,6 +204,18 @@ Komentet për `<body>` shkruaji **brenda** tij.
 Klienti fut nga CMS-ja atë që vetëm ai e di: **fotot, emrin, çmimin, kategorinë**.
 Pjesa tjetër plotësohet nga administrimi, kur ai e kërkon.
 
+Prandaj `desc_sq`, `desc_en` dhe `name_en` janë **opsionale** te
+`public/admin/config.yml`. Ishin të detyrueshme, dhe CMS-ja nuk e linte të
+ruante pa i mbushur — pikërisht ajo që e bllokonte.
+
+Faqja del e plotë edhe pa përshkrim:
+
+- paragrafi nuk shfaqet fare, që të mos mbetet vrimë mes çmimit dhe butonit
+- `meta description` dhe JSON-LD ndërtohen nga emri, kategoria dhe çmimi —
+  fakte, kurrë tekst i shpikur. Për një farmaci kjo nuk është hollësi stili:
+  pretendime shëndetësore që s'i ka shkruar askush nuk dalin dot nga kodi.
+- emri anglisht bosh merr shqipen, siç bënte klienti vetë 40 herë nga 72
+
 ```bash
 npm run mungesat   # lexon produktet dhe tregon ç'ka mbetur mangët
 ```

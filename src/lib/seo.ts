@@ -27,7 +27,22 @@ function preTeFjala(text: string, kufi: number): string {
  * Bishti ka përparësi: ai mban emrin e farmacisë dhe Tiranën, pjesa që bën
  * punë për kërkimin lokal. Përshkrimit i mbetet ajo që tepron.
  */
-export function productDescription(desc: string, cmimi: string, bishti: string): string {
+export function productDescription(
+  desc: string,
+  cmimi: string,
+  bishti: string,
+  /** Emri dhe kategoria — përdoren vetëm kur përshkrimi mungon. */
+  rrugedalje?: { emri: string; kategoria?: string },
+): string {
+  // Pa përshkrim, meta-ja ndërtohet nga ajo që dihet me siguri: emri dhe
+  // kategoria. Kurrë e shpikur — klienti mund ta lërë bosh, dhe një farmaci
+  // nuk guxon të nxjerrë pretendime që s'i ka shkruar askush.
+  if (!desc.trim()) {
+    const pjeset = [rrugedalje?.emri, rrugedalje?.kategoria].filter(Boolean);
+    const kryesorja = pjeset.join(' — ');
+    return preTeFjala(`${kryesorja}. ${cmimi}${bishti}`.trim(), MAX);
+  }
+
   const bisht = ` ${cmimi}${bishti}`;
   const hapesire = MAX - bisht.length;
 

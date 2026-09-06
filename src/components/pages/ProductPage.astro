@@ -33,11 +33,26 @@ const discount =
     ? Math.round((1 - product.price / product.oldPrice) * 100)
     : null;
 
+const tail =
+  lang === 'en'
+    ? `. Order online from ${site.legalName} in Tirana, pay on delivery.`
+    : `. Porosit online nga ${site.legalName} në Tiranë, paguaj në dorëzim.`;
+
+// Përkufizohet PARA `productSchema`, sepse ai e përdor si rrugëdalje kur
+// produkti s'ka përshkrim. `const` nuk lexohet dot para rreshtit të vet.
+const metaDescription = productDescription(
+  product.desc,
+  formatPrice(product.price),
+  tail,
+  { emri: product.name, kategoria: category?.name },
+);
+
 const productSchema = {
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: product.name,
-  description: product.desc,
+  // Pa përshkrim, Google merr atë që dihet — jo një fushë bosh.
+  description: product.desc || metaDescription,
   image: imageUrl,
   url,
   sku: product.slug,
@@ -80,13 +95,6 @@ const breadcrumbSchema = {
     item: entry.item,
   })),
 };
-
-const tail =
-  lang === 'en'
-    ? `. Order online from ${site.legalName} in Tirana, pay on delivery.`
-    : `. Porosit online nga ${site.legalName} në Tiranë, paguaj në dorëzim.`;
-
-const metaDescription = productDescription(product.desc, formatPrice(product.price), tail);
 
 const askMessage =
   lang === 'en'
@@ -171,9 +179,15 @@ const askMessage =
           </span>
         </p>
 
-        <p class="mt-6 text-[17px] leading-relaxed text-graphite">
-          {product.desc}
-        </p>
+        {
+          /* Pa përshkrim nuk lihet paragraf bosh: do të linte një vrimë mes
+             çmimit dhe butonit. Përshkrimi vjen më vonë nga administrimi. */
+          product.desc && (
+            <p class="mt-6 text-[17px] leading-relaxed text-graphite">
+              {product.desc}
+            </p>
+          )
+        }
 
         <div class="mt-7 max-w-sm">
           <AddToCart

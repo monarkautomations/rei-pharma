@@ -72,7 +72,11 @@ collections:
     public_folder: "/foto"
     fields:
       - { label: "Emri (shqip)", name: "name_sq", widget: "string", required: true }
-      - { label: "Emri (anglisht)", name: "name_en", widget: "string", required: true }
+      - label: "Emri (anglisht)"
+        name: "name_en"
+        widget: "string"
+        required: false
+        hint: "Lëre bosh nëse është i njëjtë me shqipen."
       - label: "Çmimi (lekë, vetëm numër)"
         name: "price"
         widget: "number"
@@ -108,8 +112,16 @@ collections:
         required: false
         field: { label: "Foto", name: "image", widget: "image" }
         hint: "Dalin te faqja e produktit, poshtë kryesores. Deri në 8."
-      - { label: "Përshkrimi (shqip)", name: "desc_sq", widget: "text", required: true }
-      - { label: "Përshkrimi (anglisht)", name: "desc_en", widget: "text", required: true }
+      - label: "Përshkrimi (shqip)"
+        name: "desc_sq"
+        widget: "text"
+        required: false
+        hint: "Mund ta lësh bosh — plotësohet më vonë."
+      - label: "Përshkrimi (anglisht)"
+        name: "desc_en"
+        widget: "text"
+        required: false
+        hint: "Mund ta lësh bosh."
       - { label: "Në gjendje?", name: "inStock", widget: "boolean", default: true }
       - label: "Të zgjedhura"
         name: "featured"
