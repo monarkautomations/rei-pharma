@@ -6,6 +6,7 @@ oldPrice: null
 category: kujdesi-ndaj-trupit
 brand: ''
 image: /foto/Screenshot 2026-09-05 174214.png
+images: []
 desc_sq: |-
   Antiperspirant suedez me veprim të zgjatur, pa parfum dhe pa parabene. Pretendon efekt deri në 7 ditë dhe përdoret për kontrollin e djersitjes së tepërt.
 
@@ -15,6 +16,6 @@ desc_en: |-
 
   Apply a small amount to clean, completely dry skin, usually in the evening before bedtime. Let it dry and avoid washing the area immediately after application. Follow the instructions on the package and do not apply to irritated or damaged skin.
 inStock: true
-featured: false
+featured: true
 order: 99
 ---
