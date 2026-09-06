@@ -231,8 +231,8 @@ const dictionary = {
   // Adresa përsëritet tashmë te shiriti i sipërm, footer-i, kontakti dhe
   // seksioni "Na gjen këtu" — këtu del diçka që s'thuhet gjetkë.
   heroEyebrow: {
-    sq: 'Produkte origjinale, këshillë farmacisti',
-    en: 'Genuine products, pharmacist advice',
+    sq: 'Pranë Jush, Çdo Ditë',
+    en: 'Close to You, Every Day',
   },
   heroTitleA: { sq: 'Shëndeti juaj,', en: 'Your health,' },
   heroTitleB: { sq: 'kujdesi ynë', en: 'our care' },
