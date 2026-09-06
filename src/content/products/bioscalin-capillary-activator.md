@@ -16,6 +16,6 @@ desc_en: |-
 
   Usage: Apply once a week, directly onto clean, dry scalp, using the dedicated applicator. Massage gently to help absorption. Continue treatment for 6 consecutive weeks.
 inStock: true
-featured: false
+featured: true
 order: 99
 ---
