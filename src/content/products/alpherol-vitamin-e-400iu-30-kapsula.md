@@ -6,9 +6,10 @@ oldPrice: null
 category: vitamina-suplemente
 brand: PLACEHOLDER
 image: /foto/Screenshot 2026-09-05 174323.png
+images: []
 desc_sq: Kapsule xhenatinoze e cila sherben si ushqyes i flokeve, lekures dhe thonjve.
 desc_en: Gelatin capsules that help nourish the hair, skin, and nails.
 inStock: true
-featured: true
+featured: false
 order: 3
 ---
