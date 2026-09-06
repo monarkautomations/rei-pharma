@@ -16,6 +16,6 @@ desc_en: |-
 
   Usage: Apply with a cotton pad, gently wipe over the face and eyes — no rinsing needed. Use morning and/or evening.
 inStock: true
-featured: false
+featured: true
 order: 99
 ---
