@@ -199,6 +199,28 @@ Astro-n ta hedhë krejt etiketën `<body>`, bashkë me klasat `min-h-screen flex
 flex-col` — dhe faqja mbetet pa paraqitjen e vet, pa asnjë gabim në build.
 Komentet për `<body>` shkruaji **brenda** tij.
 
+## Ndarja e punës me klientin
+
+Klienti fut nga CMS-ja atë që vetëm ai e di: **fotot, emrin, çmimin, kategorinë**.
+Pjesa tjetër plotësohet nga administrimi, kur ai e kërkon.
+
+```bash
+npm run mungesat   # lexon produktet dhe tregon ç'ka mbetur mangët
+```
+
+Raporton: kategori a foto që mungon, foto që s'ekziston te `public/`,
+përshkrim bosh a shumë i shkurtër, përshkrim anglisht i njëjtë me shqipen,
+emër që mungon, markë që ende shkruan `PLACEHOLDER`.
+
+Vetëm lexon — nuk ndryshon asgjë.
+
+**Kurthi i parë i kësaj komande, i mbajtur këtu:** versioni i parë lexonte
+frontmatter-in me regex mbi një rresht, dhe raportoi 39 "përshkrime të
+shkurtra". Ishin blloqe YAML të plota (`desc_sq: |-` me tekstin poshtë). Puna
+do të kishte nisur mbi një listë të rreme. Kur shton kontroll të ri atje,
+provoje kundrejt një file-i që përdor bllok, jo vetëm kundrejt njërit me vlerë
+në një rresht.
+
 ## Adresat e produkteve
 
 Adresa vjen nga emri i file-it te `src/content/products/`, i cili vendoset kur

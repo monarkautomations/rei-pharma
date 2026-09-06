@@ -10,7 +10,8 @@
     "logo": "node scripts/build-logo.mjs && node scripts/build-blog-placeholders.mjs",
     "fotot": "node scripts/optimize-images.mjs",
     "skema": "node scripts/test-schema.mjs",
-    "slugs": "node scripts/check-slugs.mjs"
+    "slugs": "node scripts/check-slugs.mjs",
+    "mungesat": "node scripts/mungesat.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.0",

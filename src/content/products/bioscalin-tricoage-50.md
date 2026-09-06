@@ -4,7 +4,7 @@ name_en: Bioscalin TricoAGE 50+
 price: 1560
 oldPrice: null
 category: kujdesi-ndaj-flokeve
-brand: PLACEHOLDER
+brand: ''
 image: /foto/Screenshot 2026-09-05 174647.png
 images: []
 desc_sq: Bioscalin TricoAGE 50+ është një shampo që përdoret për flokë të dobësuar, të hollë dhe pa volum, veçanërisht pas moshës 50 vjeç. Ndihmon në forcimin dhe ridensifikimin e flokut, duke i dhënë më shumë volum dhe shkëlqim. Gjithashtu përdoret si mbështetje në trajtimet kundër rënies së flokëve.

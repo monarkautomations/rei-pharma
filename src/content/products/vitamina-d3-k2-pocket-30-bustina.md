@@ -4,7 +4,7 @@ name_en: VITAMIN D3 + K2 POCKET – 30 Sachets
 price: 1850
 oldPrice: null
 category: vitamina-suplemente
-brand: PLACEHOLDER
+brand: ''
 image: /foto/Screenshot 2026-09-06 024319.png
 images: []
 desc_sq: Suplement me Vitaminë D3 + K2 në formë liposomiale, i cili ndihmon në përthithjen dhe përdorimin e kalciumit nga organizmi. Kontribuon në forcimin dhe mirëmbajtjen e kockave dhe dhëmbëve, funksionimin normal të muskujve dhe mbështet sistemin imunitar.
