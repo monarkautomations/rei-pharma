@@ -10,6 +10,6 @@ images: []
 desc_sq: Vaj pastrues qe mbron nga tharja e lekures dhe qeteson ndjesite e kruajtjes. Shkuma e saj e imet dhe ekstra e bute siguron rehati te menjehershme dhe te qendrueshme per lekuren e thate.
 desc_en: Cleansing oil that helps protect the skin from dryness and soothes itching sensations. Its fine, ultra-gentle foam provides immediate and long-lasting comfort for dry skin.
 inStock: true
-featured: false
+featured: true
 order: 99
 ---
