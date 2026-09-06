@@ -189,9 +189,10 @@ shfletuesi i vizitorit, ndaj te Google do të dilte bosh. Për këtë u shtua fu
 `noindex` te `Base.astro`; deri atëherë `noindex` vinte vetëm nga
 `alternates: null`, që vlen për 404-n.
 
-Zemrat dhe lidhja te header-i rrinë të fshehura derisa skripti të niset — një
-buton që nuk bën asgjë është më keq se mungesa e tij. Lidhja te header-i fshihet
-edhe kur lista është bosh.
+Zemrat te kartat rrinë të fshehura derisa skripti të niset — një buton që nuk
+bën asgjë është më keq se mungesa e tij. Zemra te navbar-i bën përjashtim me
+kërkesë të klientit: duket gjithmonë, edhe me listën bosh, sepse është pikë
+navigimi jo veprim. Fshihet vetëm numri mbi të.
 
 **Kurth i provuar:** komenti `{/* ... */}` mes `</head>` dhe `<body>` e bën
 Astro-n ta hedhë krejt etiketën `<body>`, bashkë me klasat `min-h-screen flex

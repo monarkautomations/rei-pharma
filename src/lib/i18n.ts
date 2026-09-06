@@ -281,8 +281,8 @@ const dictionary = {
   },
   trustDeliveryTitle: { sq: 'Dorëzim në Tiranë', en: 'Delivery in Tirana' },
   trustDeliveryNote: {
-    sq: 'Pa pagesë, brenda ditës për porositë e mëngjesit',
-    en: 'Free, same day for morning orders',
+    sq: 'Brenda ditës, pa pagesë',
+    en: 'Same day, free',
   },
   // Lista e dëshirave
   wishAdd: { sq: 'Ruaje për më vonë', en: 'Save for later' },
