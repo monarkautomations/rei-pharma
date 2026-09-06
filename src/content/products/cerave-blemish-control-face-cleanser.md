@@ -1,6 +1,6 @@
 ---
-name_sq: CeraVe – Blemish Control Face Cleanser
-name_en: CeraVe – Blemish Control Face Cleanser
+name_sq: CeraVe – Blemish Control Face Cleanser - 236 ml
+name_en: CeraVe – Blemish Control Face Cleanser - 236 ml
 price: 1420
 oldPrice: null
 category: kujdesi-ndaj-trupit
