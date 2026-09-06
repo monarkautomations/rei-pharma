@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
 import AddToCart from '../AddToCart';
 import ProductGallery from '../ProductGallery.astro';
+import WishButton from '../WishButton.astro';
 import { site, formatPrice, waLink, PRODUCT_PLACEHOLDER } from '../../config/site';
 import type { Category, Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
@@ -194,6 +195,8 @@ const askMessage =
         >
           {t(lang, 'askAboutProduct')}
         </a>
+
+        <WishButton slug={product.slug} name={product.name} lang={lang} variant="full" />
 
         <dl class="mt-8 space-y-3 border-t border-mist pt-6 text-[15px]">
           {

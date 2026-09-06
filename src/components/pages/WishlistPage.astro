@@ -1,0 +1,199 @@
+---
+/**
+ * Faqja e produkteve të ruajtura.
+ *
+ * Përmbajtja është vetjake — rri te `localStorage` i atij shfletuesi — ndaj
+ * ndërtohet te klienti, si shporta. Kjo nuk e thyen rregullin 1: rregulli
+ * kërkon që përmbajtja e SAJTIT të lexohet pa JavaScript, dhe ajo lexohet.
+ * Kjo faqe nuk ka përmbajtje sajti; ka zgjedhjet e një vizitori.
+ *
+ * Të dhënat e produkteve merren nga indeksi i kërkimit që ekziston tashmë
+ * (`/kerko.json`), jo nga një burim i dytë: aty janë emri, çmimi, fotoja dhe
+ * kategoria në të dyja gjuhët. Një skedar i dytë do të thoshte dy vende për
+ * t'i mbajtur në hap.
+ */
+import Base from '../../layouts/Base.astro';
+import { path, searchIndexUrl, t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+}
+
+const { lang, alternates } = Astro.props;
+
+const meta = {
+  sq: {
+    title: 'Të preferuarat — Rei Pharma',
+    description: 'Produktet që ke ruajtur nga Farmaci Rei.',
+  },
+  en: {
+    title: 'Favourites — Rei Pharma',
+    description: 'The products you saved from Farmaci Rei.',
+  },
+}[lang];
+---
+
+<Base
+  title={meta.title}
+  description={meta.description}
+  lang={lang}
+  alternates={alternates}
+  noindex
+>
+  <section
+    class="mx-auto max-w-[1200px] px-4 py-10 sm:py-14"
+    data-wishlist-page
+    data-index={searchIndexUrl(lang)}
+    data-product-base={path(lang, 'product', '')}
+    data-products-href={path(lang, 'products')}
+  >
+    <h1 class="text-[30px] sm:text-[40px]">{t(lang, 'wishTitle')}</h1>
+    <p class="mt-2 text-[16px] text-graphite">{t(lang, 'wishIntro')}</p>
+
+    {/* Mbushet nga skripti. Bosh derisa të dihet çfarë ka ruajtur vizitori. */}
+    <div class="mt-8" data-wish-results aria-live="polite"></div>
+
+    <noscript>
+      <p class="mt-8 rounded-[14px] border border-mist p-6 text-[15px] text-graphite">
+        {t(lang, 'wishNeedsJs')}
+      </p>
+    </noscript>
+  </section>
+</Base>
+
+<script>
+  import { teGjitha, nderro, degjo } from '../../lib/wishlist';
+  import type { SearchItem } from '../../lib/search';
+
+  const faqja = document.querySelector<HTMLElement>('[data-wishlist-page]');
+  const kutia = faqja?.querySelector<HTMLElement>('[data-wish-results]');
+
+  if (faqja && kutia) {
+    const lang = (document.body.dataset.lang ?? 'sq') as 'sq' | 'en';
+    const indeksi = faqja.dataset.index!;
+    const baza = faqja.dataset.productBase!;
+
+    const fjalet =
+      lang === 'en'
+        ? {
+            bosh: 'You have not saved any products yet.',
+            shiko: 'Browse products',
+            sa: 'saved products',
+            saNje: 'saved product',
+            outOfStock: 'Out of stock',
+            hiq: 'Remove from list',
+          }
+        : {
+            bosh: 'Nuk ke ruajtur asnjë produkt ende.',
+            shiko: 'Shiko produktet',
+            sa: 'produkte të ruajtura',
+            saNje: 'produkt i ruajtur',
+            outOfStock: 'Jashtë stoku',
+            hiq: 'Hiqe nga lista',
+          };
+
+    const lidhjaProdukteve = faqja.dataset.productsHref!;
+
+    function escapeHtml(text: string) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatPrice(lek: number) {
+      const digits = String(Math.round(lek));
+      const grouped =
+        digits.length > 4
+          ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, String.fromCharCode(0xa0))
+          : digits;
+      return `${grouped} L`;
+    }
+
+    const PLACEHOLDER = '/produkt-placeholder.svg';
+
+    function karta(item: SearchItem) {
+      const emri = lang === 'en' ? item.en : item.sq;
+      const kategoria = lang === 'en' ? item.caten : item.cat;
+      const bosh = item.image === PLACEHOLDER;
+      return `
+        <article class="group relative flex h-full flex-col rounded-[14px] border border-mist p-3 transition-colors hover:border-gold-500 sm:p-4">
+          <div class="relative overflow-hidden rounded-md ${bosh ? 'bg-bone' : 'bg-white'}">
+            <img src="${item.image}" alt="${escapeHtml(emri)}" width="600" height="600" loading="lazy"
+                 class="aspect-square w-full object-contain ${bosh ? 'p-6' : 'p-3'}" />
+            <button type="button" data-hiq="${escapeHtml(item.slug)}"
+                    aria-label="${fjalet.hiq}"
+                    class="absolute top-2 right-2 z-10 grid h-11 w-11 place-items-center rounded-full bg-white/90 text-alert backdrop-blur-sm transition-colors hover:bg-white">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z" />
+              </svg>
+            </button>
+          </div>
+          <h3 class="mt-3 line-clamp-2 font-sans text-[15px] leading-snug text-forest-900">
+            <a href="${baza}${item.slug}" class="after:absolute after:inset-0 group-hover:text-gold-600">
+              ${escapeHtml(emri)}
+            </a>
+          </h3>
+          <p class="mt-1 text-[13px] text-slate">${escapeHtml(kategoria)}</p>
+          <p class="mt-auto pt-3 text-[19px] font-medium tabular-nums text-forest-900">${formatPrice(item.price)}</p>
+          ${item.stock ? '' : `<p class="mt-1 text-[13px] text-slate">${fjalet.outOfStock}</p>`}
+        </article>`;
+    }
+
+    const zbrazet = () => {
+      kutia.innerHTML = `
+        <div class="rounded-[14px] border border-mist p-8 text-center">
+          <p class="text-[16px] text-graphite">${fjalet.bosh}</p>
+          <a href="${lidhjaProdukteve}"
+             class="mt-4 inline-flex min-h-[46px] items-center rounded-full border border-forest-900/20 px-6 text-[15px] font-medium transition-colors hover:bg-bone">
+            ${fjalet.shiko}
+          </a>
+        </div>`;
+    };
+
+    // Indeksi shkarkohet një herë; ndryshimet e listës nuk e rikërkojnë.
+    let teDhenat: SearchItem[] | null = null;
+
+    const vizato = async () => {
+      const ruajtur = teGjitha();
+      if (ruajtur.length === 0) {
+        zbrazet();
+        return;
+      }
+
+      if (!teDhenat) {
+        teDhenat = await fetch(indeksi)
+          .then((r) => (r.ok ? r.json() : []))
+          .catch(() => []);
+      }
+
+      // Renditja ndjek listën e ruajtur, jo indeksin: i fundit i ruajtur del i
+      // pari, sepse ai është ai që vizitori ka në mend.
+      const gjetur = ruajtur
+        .map((slug) => teDhenat!.find((x) => x.slug === slug))
+        .filter((x): x is SearchItem => Boolean(x));
+
+      if (gjetur.length === 0) {
+        zbrazet();
+        return;
+      }
+
+      kutia.innerHTML = `
+        <p class="text-[15px] text-slate">${gjetur.length} ${gjetur.length === 1 ? fjalet.saNje : fjalet.sa}</p>
+        <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+          ${gjetur.map(karta).join('')}
+        </div>`;
+
+      for (const b of kutia.querySelectorAll<HTMLButtonElement>('[data-hiq]')) {
+        b.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          nderro(b.dataset.hiq ?? '');
+        });
+      }
+    };
+
+    vizato();
+    degjo(() => vizato());
+  }
+</script>

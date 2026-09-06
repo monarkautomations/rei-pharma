@@ -124,6 +124,27 @@ const isActive = (href: string) => {
           </svg>
         </a>
 
+        {/*
+          Lista e dëshirave. Rri e fshehur derisa skripti të niset dhe të gjejë
+          se ka diçka brenda: një zemër bosh që s'të çon gjëkundi vetëm zë vend
+          te një header që i ka tashmë katër ikona.
+        */}
+        <a
+          href={path(lang, 'wishlist')}
+          data-wish-link
+          hidden
+          class="relative grid h-11 w-11 place-items-center rounded-full text-forest-900 transition-colors hover:bg-bone"
+          aria-label={t(lang, 'wishTitle')}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z" />
+          </svg>
+          <span
+            data-wish-count
+            class="absolute -top-0.5 -right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-forest-900 px-1 text-[11px] font-medium text-white"
+          ></span>
+        </a>
+
         <CartWidget client:load lang={lang} />
 
         <button
@@ -256,4 +277,27 @@ const isActive = (href: string) => {
       first.focus();
     }
   });
+</script>
+
+<script>
+  /**
+   * Numri te zemra e header-it.
+   *
+   * Lidhja rri e fshehur derisa të ketë të paktën një produkt të ruajtur.
+   * `degjo` e kap ndryshimin edhe kur vjen nga një skedë tjetër e hapur.
+   */
+  import { sa, degjo } from '../lib/wishlist';
+
+  const lidhja = document.querySelector<HTMLElement>('[data-wish-link]');
+  const numri = document.querySelector<HTMLElement>('[data-wish-count]');
+
+  if (lidhja && numri) {
+    const vizato = (n: number) => {
+      lidhja.hidden = n === 0;
+      numri.textContent = String(n);
+    };
+
+    vizato(sa());
+    degjo(vizato);
+  }
 </script>

@@ -173,6 +173,31 @@ zhvendoset, rimat shpërndarjen para se t'i ndryshosh.
 Të tria rrinë të fshehura pa JavaScript në mënyrë që të mos dalin butona që nuk
 bëjnë asgjë; përmbajtja — fotot dhe produktet — është gjithmonë në HTML.
 
+## Lista e dëshirave
+
+Zemra mbi çdo kartë ruan një produkt te `localStorage` (`src/lib/wishlist.ts`).
+Pa React dhe pa nanostores — rregulli 3. Shporta i ka të dyja sepse mban
+sasira, çmime dhe një panel; kjo mban një listë adresash, dhe për aq gjë një
+ishull React do të ishte tepricë.
+
+Faqja `/te-preferuarat` (`/en/favourites`) i merr të dhënat nga **indeksi i
+kërkimit që ekziston tashmë** (`/kerko.json`), jo nga një burim i dytë: aty
+janë emri, çmimi, fotoja dhe kategoria në të dyja gjuhët.
+
+Ajo faqe merr `noindex` edhe pse ka të dyja gjuhët — përmbajtjen e ka te
+shfletuesi i vizitorit, ndaj te Google do të dilte bosh. Për këtë u shtua fusha
+`noindex` te `Base.astro`; deri atëherë `noindex` vinte vetëm nga
+`alternates: null`, që vlen për 404-n.
+
+Zemrat dhe lidhja te header-i rrinë të fshehura derisa skripti të niset — një
+buton që nuk bën asgjë është më keq se mungesa e tij. Lidhja te header-i fshihet
+edhe kur lista është bosh.
+
+**Kurth i provuar:** komenti `{/* ... */}` mes `</head>` dhe `<body>` e bën
+Astro-n ta hedhë krejt etiketën `<body>`, bashkë me klasat `min-h-screen flex
+flex-col` — dhe faqja mbetet pa paraqitjen e vet, pa asnjë gabim në build.
+Komentet për `<body>` shkruaji **brenda** tij.
+
 ## Adresat e produkteve
 
 Adresa vjen nga emri i file-it te `src/content/products/`, i cili vendoset kur

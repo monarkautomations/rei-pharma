@@ -33,7 +33,8 @@ type RouteKey =
   | 'contact'
   | 'about'
   | 'terms'
-  | 'privacy';
+  | 'privacy'
+  | 'wishlist';
 
 const routes: Record<Lang, Record<RouteKey, string>> = {
   sq: {
@@ -48,6 +49,7 @@ const routes: Record<Lang, Record<RouteKey, string>> = {
     about: '/rreth-nesh',
     terms: '/kushtet',
     privacy: '/privatesia',
+    wishlist: '/te-preferuarat',
   },
   en: {
     home: '/en/',
@@ -60,6 +62,7 @@ const routes: Record<Lang, Record<RouteKey, string>> = {
     contact: '/en/contact',
     about: '/en/about',
     terms: '/en/terms',
+    wishlist: '/en/favourites',
     privacy: '/en/privacy',
   },
 };
@@ -278,9 +281,29 @@ const dictionary = {
   },
   trustDeliveryTitle: { sq: 'Dorëzim në Tiranë', en: 'Delivery in Tirana' },
   trustDeliveryNote: {
-    sq: 'Brenda ditës për porositë e mëngjesit',
-    en: 'Same day for morning orders',
+    sq: 'Pa pagesë, brenda ditës për porositë e mëngjesit',
+    en: 'Free, same day for morning orders',
   },
+  // Lista e dëshirave
+  wishAdd: { sq: 'Ruaje për më vonë', en: 'Save for later' },
+  wishRemove: { sq: 'Hiqe nga lista', en: 'Remove from list' },
+  wishTitle: { sq: 'Të preferuarat', en: 'Favourites' },
+  wishIntro: {
+    sq: 'Produktet që ke ruajtur. Rrinë vetëm në këtë shfletues.',
+    en: 'The products you saved. They stay in this browser only.',
+  },
+  wishEmpty: {
+    sq: 'Nuk ke ruajtur asnjë produkt ende.',
+    en: 'You have not saved any products yet.',
+  },
+  wishEmptyCta: { sq: 'Shiko produktet', en: 'Browse products' },
+  wishCount: { sq: 'produkte të ruajtura', en: 'saved products' },
+  wishCountOne: { sq: 'produkt i ruajtur', en: 'saved product' },
+  wishNeedsJs: {
+    sq: 'Lista ruhet në shfletuesin tënd dhe kërkon JavaScript të ndezur.',
+    en: 'The list is stored in your browser and needs JavaScript enabled.',
+  },
+
   trustAdviceTitle: { sq: 'Këshillë farmacisti', en: 'Pharmacist advice' },
   trustAdviceNote: {
     sq: 'Përgjigjet një njeri, jo një robot',
