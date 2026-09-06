@@ -6,9 +6,10 @@ oldPrice: null
 category: kujdesi-ndaj-trupit
 brand: ''
 image: /foto/Screenshot 2026-09-05 174144.png
+images: []
 desc_sq: Antidjerse e cila aplikohet vetem nje here ne jave pas dushit dhe mban larg aromerat e keqija per 7 dite.
 desc_en: Antiperspirant that is applied just once a week after showering and helps keep unpleasant odors away for up to 7 days.
 inStock: true
-featured: false
+featured: true
 order: 99
 ---
