@@ -9,6 +9,26 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
+/**
+ * Teksti ashtu siç e sheh njeriu, jo siç rri te HTML-ja.
+ *
+ * Kufijtë 65 dhe 165 janë për atë që tregon Google, dhe Google tregon `&`, jo
+ * `&amp;`. Pa këtë hap, një emër me `&` matej pesë shkronja më i gjatë se ç'është
+ * dhe raportohej si i tejkaluar: "Geek & Gorgeous" numërohej 19 në vend të 15.
+ * Tetë faqe u shënuan gabimisht kështu kur katalogu u rrit.
+ */
+function shkronjat(s) {
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    // `&amp;` i fundit, që `&amp;lt;` të mos bëhet `<`.
+    .replace(/&amp;/g, '&');
+}
+
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
     entry.isDirectory()
@@ -35,9 +55,10 @@ for (const file of pages.sort()) {
     '/' +
     relative('dist', file).split(sep).join('/').replace(/index\.html$/, '');
 
-  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '';
-  const description =
-    html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? '';
+  const title = shkronjat(html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '');
+  const description = shkronjat(
+    html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? '',
+  );
 
   const types = [];
   let jsonLdOk = true;

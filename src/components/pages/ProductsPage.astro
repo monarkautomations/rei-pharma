@@ -2,21 +2,24 @@
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
 import PriceFilter from '../PriceFilter.astro';
-import {
-  getProducts,
-  getCategoriesWithProducts,
-  getOrphanProducts,
-} from '../../lib/catalog';
+import CategorySelect from '../CategorySelect.astro';
+import Pagination from '../Pagination.astro';
+import { getCategoriesWithProducts, getOrphanProducts, type Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
   alternates: Record<Lang, string>;
+  /** Vetëm produktet e kësaj faqeje, jo i gjithë katalogu. */
+  products: Product[];
+  /** Sa produkte ka gjithsej te lista — numri që i tregohet vizitorit. */
+  total: number;
+  current: number;
+  totalPages: number;
 }
 
-const { lang, alternates } = Astro.props;
+const { lang, alternates, products, total, current, totalPages } = Astro.props;
 
-const all = await getProducts(lang);
 const categories = await getCategoriesWithProducts(lang);
 
 // Vetëm për të njoftuar në terminal nëse një kategori u fshi me produkte brenda.
@@ -34,10 +37,17 @@ const meta = {
       'Sunscreens, vitamins, supplements and hair care products. Order online and pay on delivery.',
   },
 }[lang];
+
+// Faqja 2 e tutje merr titullin e vet, që Google të mos shohë dhjetëra faqe me
+// të njëjtin titull dhe të njëjtin përshkrim.
+const title =
+  current > 1
+    ? `${meta.title.replace(' — Rei Pharma', '')} — ${t(lang, 'pageOf').replace(':n', String(current)).replace(':sa', String(totalPages))} — Rei Pharma`
+    : meta.title;
 ---
 
 <Base
-  title={meta.title}
+  title={title}
   description={meta.description}
   lang={lang}
   alternates={alternates}
@@ -55,33 +65,26 @@ const meta = {
       data-one={t(lang, 'productsAvailable')}
       data-many={t(lang, 'productsAvailable')}
     >
-      {all.length} {t(lang, 'productsAvailable')}
+      {total} {t(lang, 'productsAvailable')}
     </p>
 
     {
       categories.length > 0 && (
-        <nav class="mt-6 flex flex-wrap gap-2" aria-label={t(lang, 'filterByCategory')}>
-          <span class="inline-flex min-h-[44px] items-center rounded-full bg-forest-900 px-5 text-[14px] text-white">
-            {t(lang, 'allProducts')}
-          </span>
-          {categories.map((c) => (
-            <a
-              href={path(lang, 'category', c.slug)}
-              class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500"
-            >
-              {c.name}
-              <span class="ml-2 text-[13px] text-slate">{c.count}</span>
-            </a>
-          ))}
-        </nav>
+        <CategorySelect lang={lang} categories={categories} current={null} />
       )
     }
 
-    <PriceFilter prices={all.map((p) => p.price)} lang={lang} />
+    {/*
+      Filtri vepron mbi kartat e kësaj faqeje — ato janë kartat që ekzistojnë
+      në HTML. Prandaj edhe numrat pranë intervaleve llogariten nga kjo faqe,
+      jo nga i gjithë katalogu: një numër që s'i përgjigjet asaj që sheh
+      vizitori pas zgjedhjes do të ishte gënjeshtër e vogël por e sigurt.
+    */}
+    <PriceFilter prices={products.map((p) => p.price)} lang={lang} />
 
     <div class="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
       {
-        all.map((p, i) => (
+        products.map((p, i) => (
           <ProductCard
             id={p.slug}
             name={p.name}
@@ -97,5 +100,12 @@ const meta = {
         ))
       }
     </div>
+
+    <Pagination
+      lang={lang}
+      current={current}
+      total={totalPages}
+      base={path(lang, 'products')}
+    />
   </section>
 </Base>

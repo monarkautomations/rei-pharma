@@ -1,0 +1,118 @@
+---
+/**
+ * Ndarja e listave në faqe.
+ *
+ * Erdhi kur katalogu u rrit nga 72 produkte në mbi një mijë. Me 72, e gjithë
+ * lista rrinte në një faqe të vetme prej 322 KB — e madhe po e përballueshme.
+ * Me 1011 do të bëhej rreth 4,5 MB, dhe secila kartë mban edhe një ishull
+ * React për shportën: faqja thjesht nuk hapej në telefon.
+ *
+ * Faqja e parë mban adresën e vet të pastër (`/produktet`), jo `/produktet/1`.
+ * Kështu asnjë lidhje ekzistuese nuk prishet dhe Google nuk sheh dy adresa për
+ * të njëjtën përmbajtje.
+ *
+ * Lidhje të vërteta `<a>`, jo butona me JavaScript — pa skript faqet e tjera
+ * duhet të mbeten të arritshme, si për vizitorin ashtu edhe për crawler-at
+ * (rregulli 1).
+ */
+import { t, type Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  /** Faqja e tanishme, duke nisur nga 1. */
+  current: number;
+  total: number;
+  /** Adresa e faqes së parë, p.sh. `/produktet` ose `/kategoria/cajra`. */
+  base: string;
+}
+
+const { lang, current, total, base } = Astro.props;
+
+/** Faqja 1 rri te adresa bazë; të tjerat marrin numrin pas saj. */
+const href = (n: number) => (n <= 1 ? base : `${base}/${n}`);
+
+/**
+ * Cilët numra shfaqen.
+ *
+ * Me 43 faqe, 43 numra do të mbushnin dy rreshta në telefon dhe do të ishin
+ * zona prekjeje të ngjeshura. Shfaqen e para, e fundit, e tanishmja dhe një
+ * fqinjë nga çdo anë; boshllëqet tregohen me `…`.
+ */
+const dritarja = new Set<number>([1, total, current - 1, current, current + 1]);
+if (current <= 2) dritarja.add(3);
+if (current >= total - 1) dritarja.add(total - 2);
+
+const numrat: (number | 'ndarje')[] = [];
+let iKaluar = 0;
+for (let n = 1; n <= total; n++) {
+  if (!dritarja.has(n)) continue;
+  if (iKaluar && n - iKaluar > 1) numrat.push('ndarje');
+  numrat.push(n);
+  iKaluar = n;
+}
+
+const fjala = (celes: 'pageOf' | 'goToPage', n: number) =>
+  t(lang, celes).replace(':n', String(n)).replace(':sa', String(total));
+
+const kuti =
+  'inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full px-4 text-[15px] transition-colors';
+---
+
+{
+  total > 1 && (
+    <nav class="mt-10 flex flex-col items-center gap-4" aria-label={t(lang, 'pagination')}>
+      <ul class="flex flex-wrap items-center justify-center gap-1.5">
+        {current > 1 && (
+          <li>
+            <a
+              href={href(current - 1)}
+              rel="prev"
+              class:list={[kuti, 'border border-mist text-forest-900 hover:border-gold-500']}
+            >
+              {t(lang, 'pagePrev')}
+            </a>
+          </li>
+        )}
+
+        {numrat.map((n) =>
+          n === 'ndarje' ? (
+            <li aria-hidden="true" class="px-1 text-slate">
+              …
+            </li>
+          ) : n === current ? (
+            <li>
+              {/* Faqja e tanishme nuk është lidhje: nuk çon askund. */}
+              <span class:list={[kuti, 'bg-forest-900 text-white']} aria-current="page">
+                {n}
+              </span>
+            </li>
+          ) : (
+            <li>
+              <a
+                href={href(n)}
+                aria-label={fjala('goToPage', n)}
+                class:list={[kuti, 'border border-mist text-forest-900 hover:border-gold-500']}
+              >
+                {n}
+              </a>
+            </li>
+          ),
+        )}
+
+        {current < total && (
+          <li>
+            <a
+              href={href(current + 1)}
+              rel="next"
+              class:list={[kuti, 'border border-mist text-forest-900 hover:border-gold-500']}
+            >
+              {t(lang, 'pageNext')}
+            </a>
+          </li>
+        )}
+      </ul>
+
+      <p class="text-[14px] text-slate">{fjala('pageOf', current)}</p>
+    </nav>
+  )
+}

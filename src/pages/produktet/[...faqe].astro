@@ -1,0 +1,48 @@
+---
+/**
+ * Lista e produkteve, e ndarë në faqe.
+ *
+ * `[...faqe]` me pjesë të lirë do të thotë që faqja e parë del te `/produktet`
+ * pa numër, dhe të tjerat te `/produktet/2`. Kështu adresa e vjetër mbetet e
+ * njëjtë dhe asnjë lidhje e shpërndarë deri sot nuk prishet.
+ */
+import Page from '../../components/pages/ProductsPage.astro';
+import { getProducts } from '../../lib/catalog';
+import { path, type Lang } from '../../lib/i18n';
+import { productsPerPage } from '../../config/site';
+
+export async function getStaticPaths() {
+  const products = await getProducts('sq');
+  const totalPages = Math.max(1, Math.ceil(products.length / productsPerPage));
+
+  return Array.from({ length: totalPages }, (_, i) => {
+    const current = i + 1;
+    // Faqja 1 merr `undefined`, jo '1': ndryshe do të dilte `/produktet/1`
+    // krahas `/produktet` — dy adresa për të njëjtën përmbajtje.
+    return {
+      params: { faqe: current === 1 ? undefined : String(current) },
+      props: {
+        products: products.slice(i * productsPerPage, (i + 1) * productsPerPage),
+        total: products.length,
+        current,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { products, total, current, totalPages } = Astro.props;
+
+/** Adresa e së njëjtës faqe në gjuhën tjetër. Faqja 1 pa numër. */
+const adresa = (lang: Lang) =>
+  current === 1 ? path(lang, 'products') : `${path(lang, 'products')}/${current}`;
+---
+
+<Page
+  lang="sq"
+  products={products}
+  total={total}
+  current={current}
+  totalPages={totalPages}
+  alternates={{ sq: adresa('sq'), en: adresa('en') }}
+/>

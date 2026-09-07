@@ -96,6 +96,15 @@ const breadcrumbSchema = {
   })),
 };
 
+/**
+ * Përshkrimi i ndarë në paragrafë.
+ *
+ * Llogaritet këtu, jo brenda shabllonit: një regex me kllapa gjarpërore
+ * (`\n{2,}`) brenda `{...}` e ngatërron kompajlerin e Astro-s, që e sheh `{`
+ * si fillim shprehjeje dhe ndal ndërtimin me "Expected > but found {".
+ */
+const paragrafet = product.desc ? product.desc.split(/\n\s*\n/) : [];
+
 const askMessage =
   lang === 'en'
     ? `Hello! I have a question about "${product.name}".`
@@ -181,12 +190,21 @@ const askMessage =
 
         {
           /* Pa përshkrim nuk lihet paragraf bosh: do të linte një vrimë mes
-             çmimit dhe butonit. Përshkrimi vjen më vonë nga administrimi. */
-          product.desc && (
-            <p class="mt-6 text-[17px] leading-relaxed text-graphite">
-              {product.desc}
+             çmimit dhe butonit. Përshkrimi vjen më vonë nga administrimi.
+
+             Ndarja me rresht bosh bëhet paragraf i vetin. Pa këtë, "Përdorimi:"
+             dhe "Përbërja:" ngjiteshin pas fjalisë së mëparshme në një bllok
+             të vetëm — HTML-ja i heq rreshtat brenda një `<p>`. */
+          paragrafet.map((paragraf, i) => (
+            <p
+              class:list={[
+                'text-[17px] leading-relaxed text-graphite',
+                i === 0 ? 'mt-6' : 'mt-4',
+              ]}
+            >
+              {paragraf}
             </p>
-          )
+          ))
         }
 
         <div class="mt-7 max-w-sm">

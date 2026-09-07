@@ -1,0 +1,140 @@
+---
+/**
+ * Kategoritë si listë zgjedhëse.
+ *
+ * Ishin butona rrethorë, një për kategori. Me 8 kategori zinin dy rreshta; me
+ * 17 — sa u bënë pas importit — zinin gjashtë rreshta në telefon dhe e shtynin
+ * produktin e parë poshtë faqes. E njëjta zgjidhje si te filtri i çmimit: një
+ * rresht i vetëm që tregon vetëm atë që është zgjedhur.
+ *
+ * `<select>` i vërtetë, jo menu e ndërtuar me div-a: në telefon hap zgjedhësin
+ * e vetë sistemit, punon me tastierë dhe me lexues ekrani pa i shkruar ne ato
+ * sjellje.
+ *
+ * Lidhjet e vjetra nuk hiqen — rrinë te HTML-ja dhe fshihen vetëm kur skripti
+ * niset. Pa JavaScript vizitori sheh butonat si më parë dhe crawler-at gjejnë
+ * lidhje të vërteta drejt çdo kategorie (rregulli 1). Një `<select>` i vetëm
+ * do t'i linte kategoritë pa asnjë lidhje hyrëse.
+ */
+import { path, t, type Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  categories: Array<{ slug: string; name: string; count?: number }>;
+  /** Kategoria e hapur tani, ose `null` te lista e plotë. */
+  current: string | null;
+}
+
+const { lang, categories, current } = Astro.props;
+
+const teGjitha = path(lang, 'products');
+---
+
+<div class="mt-6" data-cat>
+  {/*
+    Butonat: gjendja pa JavaScript. Fshihen nga skripti, jo nga CSS-ja — nëse
+    skripti nuk niset, ata mbeten e vetmja rrugë drejt kategorive.
+  */}
+  <nav class="flex flex-wrap gap-2" aria-label={t(lang, 'filterByCategory')} data-cat-links>
+    {
+      current === null ? (
+        <span class="inline-flex min-h-[44px] items-center rounded-full bg-forest-900 px-5 text-[14px] text-white">
+          {t(lang, 'allProducts')}
+        </span>
+      ) : (
+        <a
+          href={teGjitha}
+          class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500"
+        >
+          {t(lang, 'allProducts')}
+        </a>
+      )
+    }
+    {
+      categories.map((c) =>
+        c.slug === current ? (
+          <span
+            class="inline-flex min-h-[44px] items-center rounded-full bg-forest-900 px-5 text-[14px] text-white"
+            aria-current="page"
+          >
+            {c.name}
+          </span>
+        ) : (
+          <a
+            href={path(lang, 'category', c.slug)}
+            class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500"
+          >
+            {c.name}
+            {c.count !== undefined && <span class="ml-2 text-[13px] text-slate">{c.count}</span>}
+          </a>
+        ),
+      )
+    }
+  </nav>
+
+  {/*
+    `w-20` te etiketa që ky zgjedhës dhe ai i çmimit poshtë të nisin në të
+    njëjtën kolonë. Pa të, dy rreshtat dilnin të zhvendosur nga njëri-tjetri.
+  */}
+  <label class="flex items-center gap-3" data-cat-box hidden>
+    <span class="w-20 shrink-0 text-[14px] text-slate">{t(lang, 'labelCategory')}</span>
+
+    <span class="relative inline-flex min-w-0 flex-1 sm:flex-none">
+      <select
+        data-cat-select
+        aria-label={t(lang, 'filterByCategory')}
+        class="min-h-[44px] w-full appearance-none truncate rounded-full border border-mist bg-white py-2 pr-10 pl-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500 focus:border-forest-900 focus:outline-none sm:w-[280px]"
+      >
+        <option value={teGjitha} selected={current === null}>
+          {t(lang, 'allProducts')}
+        </option>
+        {
+          categories.map((c) => (
+            <option value={path(lang, 'category', c.slug)} selected={c.slug === current}>
+              {c.count === undefined ? c.name : `${c.name} (${c.count})`}
+            </option>
+          ))
+        }
+      </select>
+
+      {/* Shigjeta jonë, sepse `appearance-none` e heq atë të sistemit. */}
+      <svg
+        class="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-slate"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="m6 9 6 6 6-6"></path>
+      </svg>
+    </span>
+  </label>
+</div>
+
+<script>
+  /**
+   * Këmben butonat me listën zgjedhëse dhe e bën atë të lundrojë.
+   *
+   * Rendi ka rëndësi: lista shfaqet para se butonat të fshihen, që faqja të
+   * mos kërcejë. Nëse ky skript nuk niset, mbeten butonat — të plotë dhe të
+   * përdorshëm, thjesht më të gjatë.
+   */
+  const kutia = document.querySelector<HTMLElement>('[data-cat]');
+  const lidhjet = kutia?.querySelector<HTMLElement>('[data-cat-links]');
+  const korniza = kutia?.querySelector<HTMLElement>('[data-cat-box]');
+  const zgjedhesi = kutia?.querySelector<HTMLSelectElement>('[data-cat-select]');
+
+  if (lidhjet && korniza && zgjedhesi) {
+    korniza.hidden = false;
+    lidhjet.hidden = true;
+
+    zgjedhesi.addEventListener('change', () => {
+      if (zgjedhesi.value) window.location.href = zgjedhesi.value;
+    });
+  }
+</script>

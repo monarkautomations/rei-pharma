@@ -1,0 +1,39 @@
+---
+/** Njësoj si `/produktet`, në anglisht. Shih komentin atje. */
+import Page from '../../../components/pages/ProductsPage.astro';
+import { getProducts } from '../../../lib/catalog';
+import { path, type Lang } from '../../../lib/i18n';
+import { productsPerPage } from '../../../config/site';
+
+export async function getStaticPaths() {
+  const products = await getProducts('en');
+  const totalPages = Math.max(1, Math.ceil(products.length / productsPerPage));
+
+  return Array.from({ length: totalPages }, (_, i) => {
+    const current = i + 1;
+    return {
+      params: { faqe: current === 1 ? undefined : String(current) },
+      props: {
+        products: products.slice(i * productsPerPage, (i + 1) * productsPerPage),
+        total: products.length,
+        current,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { products, total, current, totalPages } = Astro.props;
+
+const adresa = (lang: Lang) =>
+  current === 1 ? path(lang, 'products') : `${path(lang, 'products')}/${current}`;
+---
+
+<Page
+  lang="en"
+  products={products}
+  total={total}
+  current={current}
+  totalPages={totalPages}
+  alternates={{ sq: adresa('sq'), en: adresa('en') }}
+/>

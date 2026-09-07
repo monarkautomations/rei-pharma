@@ -11,6 +11,7 @@
     "fotot": "node scripts/optimize-images.mjs",
     "skema": "node scripts/test-schema.mjs",
     "slugs": "node scripts/check-slugs.mjs",
+    "importo": "node scripts/importo.mjs",
     "mungesat": "node scripts/mungesat.mjs"
   },
   "dependencies": {

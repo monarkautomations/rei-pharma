@@ -2,6 +2,8 @@
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../ProductCard.astro';
 import PriceFilter from '../PriceFilter.astro';
+import CategorySelect from '../CategorySelect.astro';
+import Pagination from '../Pagination.astro';
 import type { Category, Product } from '../../lib/catalog';
 import { path, t, type Lang } from '../../lib/i18n';
 import { pageTitle } from '../../lib/seo';
@@ -10,15 +12,29 @@ interface Props {
   lang: Lang;
   alternates: Record<Lang, string>;
   category: Category;
+  /** Vetëm produktet e kësaj faqeje. */
   products: Product[];
-  siblings: Category[];
+  /** Të gjitha kategoritë, kjo përfshirë — zgjedhësi i tregon të plota. */
+  categories: Category[];
+  current: number;
+  totalPages: number;
 }
 
-const { lang, alternates, category, products, siblings } = Astro.props;
+const { lang, alternates, category, products, categories, current, totalPages } = Astro.props;
+
+// Faqja 2 e tutje merr titull të vetin, që të mos dalin dhjetëra faqe me të
+// njëjtin titull te Google.
+const titulli =
+  current > 1
+    ? pageTitle(
+        `${category.name} — ${t(lang, 'pageOf').replace(':n', String(current)).replace(':sa', String(totalPages))}`,
+        'Rei Pharma',
+      )
+    : pageTitle(category.name, 'Rei Pharma');
 ---
 
 <Base
-  title={pageTitle(category.name, 'Rei Pharma')}
+  title={titulli}
   description={category.blurb}
   lang={lang}
   alternates={alternates}
@@ -37,30 +53,7 @@ const { lang, alternates, category, products, siblings } = Astro.props;
       {category.blurb}
     </p>
 
-    <nav class="mt-6 flex flex-wrap gap-2" aria-label={t(lang, 'filterByCategory')}>
-      <a
-        href={path(lang, 'products')}
-        class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500"
-      >
-        {t(lang, 'allProducts')}
-      </a>
-      <span
-        class="inline-flex min-h-[44px] items-center rounded-full bg-forest-900 px-5 text-[14px] text-white"
-        aria-current="page"
-      >
-        {category.name}
-      </span>
-      {
-        siblings.map((s) => (
-          <a
-            href={path(lang, 'category', s.slug)}
-            class="inline-flex min-h-[44px] items-center rounded-full border border-mist px-5 text-[14px] text-forest-900 transition-colors hover:border-gold-500"
-          >
-            {s.name}
-          </a>
-        ))
-      }
-    </nav>
+    <CategorySelect lang={lang} categories={categories} current={category.slug} />
 
     {
       products.length === 0 ? (
@@ -93,6 +86,13 @@ const { lang, alternates, category, products, siblings } = Astro.props;
             />
           ))}
         </div>
+
+        <Pagination
+          lang={lang}
+          current={current}
+          total={totalPages}
+          base={path(lang, 'category', category.slug)}
+        />
         </>
       )
     }

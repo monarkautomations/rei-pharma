@@ -52,6 +52,19 @@ export const site = {
 } as const;
 
 /**
+ * Sa produkte për faqe te listat.
+ *
+ * 24, sepse pjesëtohet me 2 (grid-i në telefon) dhe me 4 (grid-i në desktop):
+ * asnjë rresht i fundit gjysmak. Një kartë peshon rreth 4,5 KB HTML bashkë me
+ * ishullin e shportës dhe JSON-LD-në, pra 24 karta bëjnë një faqe rreth 110 KB.
+ *
+ * Kjo u bë e nevojshme kur katalogu kaloi 1000 produktet. Me 72 gjithçka
+ * rrinte në një faqe; me 1011 ajo faqe do të bëhej ~4,5 MB dhe nuk do të
+ * hapej fare në telefon.
+ */
+export const productsPerPage = 24;
+
+/**
  * Numrat që animohen te kryefaqja. Konfirmuar nga klienti.
  */
 export const stats = [

@@ -1,0 +1,51 @@
+---
+/** Njësoj si `/kategoria/<slug>`, në anglisht. Shih komentin atje. */
+import CategoryPage from '../../../../components/pages/CategoryPage.astro';
+import { getCategories, getProducts } from '../../../../lib/catalog';
+import { path, type Lang } from '../../../../lib/i18n';
+import { productsPerPage } from '../../../../config/site';
+
+export async function getStaticPaths() {
+  const [categories, products] = await Promise.all([
+    getCategories('en'),
+    getProducts('en'),
+  ]);
+
+  return categories.flatMap((c) => {
+    const teKesaj = products.filter((p) => p.category === c.slug);
+    const totalPages = Math.max(1, Math.ceil(teKesaj.length / productsPerPage));
+
+    return Array.from({ length: totalPages }, (_, i) => {
+      const current = i + 1;
+      return {
+        params: { slug: c.slug, faqe: current === 1 ? undefined : String(current) },
+        props: {
+          category: c,
+          products: teKesaj.slice(i * productsPerPage, (i + 1) * productsPerPage),
+          categories,
+          current,
+          totalPages,
+        },
+      };
+    });
+  });
+}
+
+const { category, products, categories, current, totalPages } = Astro.props;
+const { slug } = Astro.params;
+
+const adresa = (lang: Lang) =>
+  current === 1
+    ? path(lang, 'category', slug!)
+    : `${path(lang, 'category', slug!)}/${current}`;
+---
+
+<CategoryPage
+  lang="en"
+  category={category}
+  products={products}
+  categories={categories}
+  current={current}
+  totalPages={totalPages}
+  alternates={{ sq: adresa('sq'), en: adresa('en') }}
+/>

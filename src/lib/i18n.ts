@@ -178,6 +178,11 @@ const dictionary = {
 
   // Filtri i çmimit
   filterByPrice: { sq: 'Filtro sipas çmimit', en: 'Filter by price' },
+  // Etiketa të shkurtra për të dy zgjedhësit mbi listë. "Filtro sipas
+  // kategorisë" këputej në dy rreshta në telefon dhe i linte të dy zgjedhësit
+  // të pabarabartë; vetë zgjedhësi e tregon çfarë është zgjedhur.
+  labelCategory: { sq: 'Kategoria', en: 'Category' },
+  labelPrice: { sq: 'Çmimi', en: 'Price' },
   priceAll: { sq: 'Çdo çmim', en: 'Any price' },
   priceUnder: { sq: 'Deri në', en: 'Under' },
   priceOver: { sq: 'Mbi', en: 'Over' },
@@ -198,6 +203,13 @@ const dictionary = {
     sq: 'Filtro sipas kategorisë',
     en: 'Filter by category',
   },
+
+  // Ndarja në faqe
+  pagination: { sq: 'Faqet e produkteve', en: 'Product pages' },
+  pagePrev: { sq: 'Më parë', en: 'Previous' },
+  pageNext: { sq: 'Më pas', en: 'Next' },
+  pageOf: { sq: 'Faqja :n nga :sa', en: 'Page :n of :sa' },
+  goToPage: { sq: 'Shko te faqja :n', en: 'Go to page :n' },
   brand: { sq: 'Marka', en: 'Brand' },
   category: { sq: 'Kategoria', en: 'Category' },
   payment: { sq: 'Pagesa', en: 'Payment' },
